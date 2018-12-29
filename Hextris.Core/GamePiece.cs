@@ -26,15 +26,15 @@ namespace Hextris.Core
 
         GameHexagon[,] data = new GameHexagon[5, 5];
 
-        PieceType eType;
+        PieceType pieceType;
         int xPos, yPos;
         
         public GamePiece ()
         {
-            eType = GetRandomType();
+            pieceType = GetRandomType();
             Init ();
 
-            SetPiece(eType); //for now
+            SetPiece(pieceType); //for now
         }
 
         PieceType GetRandomType ()
@@ -44,9 +44,8 @@ namespace Hextris.Core
             return (PieceType)value;
         }
 
-        void Init()
+        public void Init()
         {
-            
             piecesData = new byte[]  { 0,0,0,0,0,
                                         0,0,0,0,0,
                                         1,1,1,1,0,
@@ -162,7 +161,7 @@ namespace Hextris.Core
             data[3,3] = temp;
         }
 
-        public bool CopyPiece (GamePiece piece)
+        public bool CopyPieceState (GamePiece piece)
         {
             if (piece == null)
                 return false;
@@ -178,14 +177,14 @@ namespace Hextris.Core
 
             xPos = piece.GetX();
             yPos = piece.GetY();
-            eType = piece.GetPieceType();
+            pieceType = piece.GetPieceType();
 
             return true;
         }
 
         public PieceType GetPieceType ()
         {
-            return eType;
+            return pieceType;
         }
 
         public void SetPosition(int x, int y)

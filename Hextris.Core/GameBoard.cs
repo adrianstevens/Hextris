@@ -31,6 +31,8 @@
     {
         static int GAME_WIDTH = 10;
         static int GAME_HEIGHT = 40;
+        static int NUM_PIECE_TYPES = (int)PieceType.count;
+        static int NUM_PREVIEWS = 3;
 
         GameState gameState;
         GameType gameType = GameType.Classic;
@@ -42,21 +44,70 @@
         GamePiece savedPiece;
         GamePiece ghostPiece;
         GamePiece currentPiece;
+        GamePiece[] piecePreviews = new GamePiece[NUM_PIECE_TYPES];
 
         int[] iPieceStats = new int[(int)PieceType.count]; 
-        int iRows = GAME_HEIGHT;
-        int iStartingLevel = 0;
-        int iTime = 0;
+        int rows = GAME_HEIGHT;
+        int rowsCleared;
+        int startingLevel;
+        int time;
+        int score;
+        int level;
+
+        int[] stats = new int[NUM_PIECE_TYPES];
+
+        bool newHighScore;
 
         public GameBoard()
         {
+            savedPiece = new GamePiece();
+            ghostPiece = new GamePiece();
+
+            for (int i = 0; i < NUM_PREVIEWS; i++)
+            {
+                piecePreviews[i] = new GamePiece();
+                piecePreviews[i].Init();
+                piecePreviews[i].SetPosition(4, 20);
+            }
+
             NewGame();
         }
 
         public void OnTimerTick () //from rendering engine
         {
-        //    currentPiece.MoveDown();
+            currentPiece.MoveDown();
 
+            if(CheckCollision(currentPiece) == true)
+            {
+                currentPiece.MoveUp();
+                SetPieceToBoard(currentPiece);
+                NewPiece();
+                CheckForCompleteLines();
+                CalcGhost();
+            }
+        }
+
+        void Reset ()
+        {
+            score = 0;
+            rowsCleared = 0;
+            level = startingLevel;
+            time = 0;
+            newHighScore = false;
+
+            for (int i = 0; i < NUM_PIECE_TYPES; i++)
+                stats[i] = 0;
+
+            ResetBoard();
+
+            savedPiece.Init();
+
+            //reset the preview pieces
+            for (int i = 0; i < NUM_PREVIEWS; i++)
+                piecePreviews[i].Init();
+
+            NewPiece();
+            CalcGhost();
         }
 
         public void ResetBoard ()
@@ -74,8 +125,17 @@
 
         void NewPiece ()
         {
+            var oldPiece = currentPiece;
+            currentPiece = piecePreviews[0];
 
+            for (int i = 0; i < NUM_PREVIEWS - 1; i++)
+                piecePreviews[i] = piecePreviews[i + 1];
 
+            oldPiece.Init();
+            oldPiece.SetPosition(-5, rows + 2);
+            piecePreviews[NUM_PREVIEWS - 1] = oldPiece;
+
+            stats[(int)currentPiece.GetPieceType()]++;
         }
 
         void NewGame ()
@@ -114,31 +174,83 @@
 
         public bool OnUp ()
         {
-            return false;
+            currentPiece.MoveUp();
+            return true;
         }
 
         public bool OnDown ()
         {
             currentPiece.MoveDown();
+
+            if(CheckCollision(currentPiece))
+            {
+                currentPiece.MoveUp();
+                return false;
+            }
             return true;
         }
 
         public bool OnLeft ()
         {
             currentPiece.MoveLeft();
+
+            if (CheckCollision(currentPiece))
+            {
+                currentPiece.MoveRight();
+                return false;
+            }
+
+            CalcGhost();
+
             return true;
         }
 
         public bool OnRight ()
         {
             currentPiece.MoveRight();
+
+            if (CheckCollision(currentPiece))
+            {
+                currentPiece.MoveLeft();
+                return false;
+            }
+
+            CalcGhost();
+
             return true;
         }
 
         public bool OnRotate ()
         {
             currentPiece.Rotate();
+
+            if(CheckCollision(currentPiece))
+            {
+                currentPiece.MoveLeft();
+                if(CheckCollision(currentPiece))
+                {
+                    currentPiece.MoveRight();
+                    currentPiece.MoveRight();
+
+                    if(CheckCollision(currentPiece))
+                    {
+                        //give up
+                        //TODO
+                        currentPiece.MoveLeft();
+                        currentPiece.MoveUp();
+                        return false;
+                    }
+                }
+            }
+
+            CalcGhost();
+
             return true;
+        }
+
+        public bool OnDrop ()
+        {
+            return currentPiece.CopyPieceState(ghostPiece);
         }
 
         public bool OnSwitchPiece ()
@@ -147,10 +259,70 @@
             return false;
         }
 
-        private bool CheckCollision()
+        private void SetPieceToBoard(GamePiece gamePiece)
         {
-            return false;
+            int iYOffset = 0;
 
+            for (int i = 0; i < 5; i++)
+            {
+                if ((i + currentPiece.GetX()) % 2 == 0)
+                    iYOffset++;
+
+                for (int j = 0; j < 5; j++)
+                {
+                    if (currentPiece.GetHex(i, j).ePiece == HexType.GamePiece)
+                    {
+                        int x2 = currentPiece.GetX() + i;
+                        int y2 = currentPiece.GetY() - j - iYOffset;
+
+                        gameField[x2,y2].ePiece = HexType.GamePiece;
+                        gameField[x2,y2].indexColor = (int)currentPiece.GetPieceType();
+                    }
+                }
+            }
+            CheckForEndGameState();
+        }
+
+        private void CheckForEndGameState()
+        {
+            for (int i = 0; i < GAME_WIDTH; i++)
+            {
+                if (gameField[i,rows - 1].ePiece == HexType.GamePiece)
+                {   //game over
+                    gameState = GameState.GameOver;
+                    return;
+                }
+            }
+        }
+
+        private bool CheckCollision(GamePiece gamePiece)
+        {
+            if (gamePiece == null)
+                return false;
+
+            int iYOffset = 0;//I'm not happy about this either ....
+            for (int x = 0; x < 5; x++)
+            {
+                if ((x + gamePiece.GetX()) % 2 == 0)
+                    iYOffset++;
+
+                for (int y = 0; y < 5; y++)
+                {
+                    if (gamePiece.GetHex(x,y).ePiece == HexType.GamePiece)
+                    {
+                        int x2 = gamePiece.GetX() + x;
+                        int y2 = gamePiece.GetY() - y - iYOffset;
+
+                        if (y2 >= GAME_HEIGHT)
+                            continue;
+                        if (x2 < 0 || x2 >= GAME_WIDTH || y2 < 0)
+                            return true;
+                        if (gameField[x2,y2].ePiece != HexType.Blank)
+                            return true;
+                    }
+                }
+            }
+            return false;
         }
 
         private void CalcGhost ()
@@ -170,9 +342,9 @@
 
         public void SetNumRows(int iRows)
         {
-            this.iRows = iRows;
+            this.rows = iRows;
         }
 
-        public int GetNumRows() { return iRows; }
+        public int GetNumRows() { return rows; }
     }
 }

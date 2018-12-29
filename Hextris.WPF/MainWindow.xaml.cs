@@ -48,8 +48,6 @@ namespace Hextris.WPF
 
         private void MainWindow_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            
-
             switch(e.Key)
             {
                 case Key.Left:
@@ -70,7 +68,6 @@ namespace Hextris.WPF
                 default:
                     return;
             }
-
             OnDraw();
         }
 
