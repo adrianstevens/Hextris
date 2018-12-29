@@ -51,10 +51,10 @@ namespace Hextris.WPF
             gameTimer.Tick += GameTimerTick;
             gameTimer.Start();
 
-            this.KeyUp += MainWindow_KeyUp;   
+            this.KeyUp += OnKeyUp;   
         }
 
-        private void MainWindow_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        private void OnKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
         {
             switch(e.Key)
             {
@@ -72,6 +72,9 @@ namespace Hextris.WPF
                     break;
                 case Key.R:
                     oGame.ResetBoard();
+                    break;
+                case Key.S:
+                    oGame.OnSwitchPiece();
                     break;
                 case Key.Space:
                     oGame.OnDrop();
@@ -211,7 +214,7 @@ namespace Hextris.WPF
 
             return clr;
         }
-            
+
         void DrawGhost ()
         {
             var ghostPiece = oGame.GetGhost();
@@ -244,7 +247,10 @@ namespace Hextris.WPF
 
         void DrawPiecePreview ()
         {
+            previewBmp.DrawRectangle(10, 30, 110, 130, Colors.Gray);
+
             GamePiece previewPiece;
+            GamePiece savedPiece = oGame.GetSavedPiece();
             int yOffset = 0;
 
             for (int i = 0; i < 4; i++)
@@ -254,11 +260,22 @@ namespace Hextris.WPF
 
                 for (int j = 1; j < 5; j++)
                 {
+                    int x = i + 10;
+                    int y = GameBoard.GAME_HEIGHT + 1 - j - yOffset;
+
+                    if (savedPiece.GetHex(i, j).ePiece == HexType.GamePiece)
+                    {
+                        DrawHexagon(previewBmp, gameField[i, y],
+                                GetColor(savedPiece.PieceType, false),
+                                GetColor(savedPiece.PieceType, true),
+                                HEX_SIZE, false);
+                    }
+
                     for (int k = 0; k < 3; k++)
                     {
                         previewPiece = oGame.GetPreviewPiece(k);
 
-                        int y = GameBoard.GAME_HEIGHT - (4 * (k + 1)) - j - yOffset;
+                        y = GameBoard.GAME_HEIGHT - (4 * (k + 1)) - j - yOffset;
 
                         if (previewPiece.GetHex(i, j).ePiece == HexType.GamePiece)
                         {

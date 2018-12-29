@@ -126,6 +126,7 @@ namespace Hextris.Core
                 stats[i] = 0;
 
             savedPiece.SetRandomPieceType();
+            savedPiece.SetPosition(4, GAME_HEIGHT);
             currentPiece.SetPosition(4, GAME_HEIGHT);
 
             //reset the preview pieces
@@ -274,8 +275,10 @@ namespace Hextris.Core
 
         public bool OnSwitchPiece()
         {
-
-            return false;
+            var piece = currentPiece;
+            currentPiece = savedPiece;
+            savedPiece = piece;
+            return true;
         }
 
         private void SetPieceToBoard(GamePiece gamePiece)
@@ -312,6 +315,11 @@ namespace Hextris.Core
                     return;
                 }
             }
+        }
+
+        public GamePiece GetSavedPiece ()
+        {
+            return savedPiece;
         }
 
         public GamePiece GetPreviewPiece(int index)
