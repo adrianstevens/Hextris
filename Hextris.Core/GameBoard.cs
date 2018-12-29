@@ -1,5 +1,14 @@
-﻿namespace Hextris.Core
+﻿using System;
+
+namespace Hextris.Core
 {
+    //ToDo needs renaming
+    public struct ClearedType
+    {
+        public int iRow { get; set; }
+        public bool bAlt { get; set; }
+    };
+
     enum GameState
     {
         Ingame,
@@ -33,6 +42,7 @@
         public static int GAME_HEIGHT = 20;
         static int NUM_PIECE_TYPES = (int)PieceType.count;
         static int NUM_PREVIEWS = 3;
+        static int MAX_LINES = 8;
 
         GameState gameState;
         GameType gameType = GameType.Classic;
@@ -40,6 +50,8 @@
         GameHexagon[,] gameField = new GameHexagon[GAME_WIDTH, GAME_HEIGHT];//our game field
 	    GameHexagon[,] prevField = new GameHexagon[GAME_WIDTH, GAME_HEIGHT];//before a line remove
 	    GameHexagon[,] preDropField = new GameHexagon[GAME_WIDTH, GAME_HEIGHT];//lines erased without dropping
+
+        ClearedType[] clearedLines = new ClearedType[MAX_LINES];
 
         GamePiece savedPiece;
         GamePiece ghostPiece;
@@ -346,7 +358,105 @@
 
         private void CheckForCompleteLines ()
         {
+            var iClearedLines = 0;
 
+            bool bCompLine;
+            bool bCompAlt;
+
+            //ToDo check if the -1 is needed (wasn't in C++ code)
+            for (int y = 0; y < rows - 1; y++)
+            {
+                bCompLine = true;
+
+                for (int x = 0; x < GAME_WIDTH; x++)
+                {
+                    if (gameField[x,y].ePiece != HexType.GamePiece)
+                    {
+                        bCompLine = false;
+                    }
+                }
+
+                if (bCompLine)
+                {
+                    clearedLines[iClearedLines].bAlt = false;
+                    clearedLines[iClearedLines].iRow = y;
+                    iClearedLines++;
+                }
+
+                bCompAlt = true;
+
+                for (int x = 0; x < GAME_WIDTH; x++)
+                {
+                    if (gameField[x, y + x % 2].ePiece != HexType.GamePiece)
+                    {
+                        bCompAlt = false;
+                    }
+                }
+
+                if (bCompAlt)
+                {
+                    clearedLines[iClearedLines].bAlt = true;
+                    clearedLines[iClearedLines].iRow = y;
+                    iClearedLines++;
+                }
+            }
+
+            if (iClearedLines > 0)
+            {
+                //now we set our alt structures
+                Array.Copy(gameField, prevField, gameField.Length);
+                //memcpy(prevField, gameField, sizeof(GameHexagon) * GAME_WIDTH * MAX_GAME_HEIGHT);
+
+                for (int i = 0; i < iClearedLines; i++)
+                {
+                    //now we'll set the hexes to cleared
+                    SetLineToCleared(clearedLines[i].iRow, clearedLines[i].bAlt);
+                    Array.Copy(gameField, preDropField, gameField.Length);
+                  //  memcpy(preDropField, gameField, sizeof(GameHexagon) * GAME_WIDTH * GAME_HEIGHT);
+                }
+                //and finally, copy and move everything down
+                DropPieces();
+            }
+        }
+
+        private void SetLineToCleared(int iY, bool bAlt)
+        {
+            int iYLow = iY;
+
+            //to make this really easy we're going to do this one column at a time
+            for (int i = 0; i < GAME_WIDTH; i++)
+            {
+                if (bAlt)
+                    iYLow = iY + i % 2;
+
+                gameField[i, iYLow].ePiece = HexType.Erased;
+            }
+            ScoreClearedLine();
+        }
+
+        private void ScoreClearedLine()
+        {
+
+        }
+
+        void DropPieces()
+        {
+            //to make this really easy we're going to do this one column at a time
+            for (int i = 0; i < GAME_WIDTH; i++)
+            {
+                for (int j = rows - 1; j > -1; j--)
+                {
+                    if (gameField[i,j].ePiece == HexType.Erased)
+                    {
+                        for (int k = j; k < rows - 2; k++)
+                        {
+                            gameField[i,k] = gameField[i,k + 1];
+                        }
+                        //and no matter what, we clear the top
+                        gameField[i, rows - 1].ePiece = HexType.Blank;
+                    }
+                }
+            }
         }
 
         public GamePiece GetCurrentPiece ()

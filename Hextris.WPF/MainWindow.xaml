@@ -5,10 +5,21 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Hextris.WPF"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="800" Loaded="Window_Loaded">
+        Title="MainWindow" 
+        Height="600"
+        Loaded="Window_Loaded">
 
     <Grid Background="Black" VerticalAlignment="Top" >
-        <Grid x:Name="imageContainer" Width="320" Height="640">
+        <Grid.ColumnDefinitions>
+            
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="30" />
+        </Grid.RowDefinitions>
+        
+        <Grid Margin="10"
+            x:Name="imageContainer" Width="320" Height="500" >
             <Image x:Name="imageGame" />
         </Grid>
         

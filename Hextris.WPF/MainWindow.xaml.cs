@@ -89,7 +89,7 @@ namespace Hextris.WPF
             using (gameboardBmp.GetBitmapContext())
             {
                 gameboardBmp.Clear();
-                DrawBackGround();
+                DrawBackground();
                 DrawGameBoard();
                 DrawGhost();
                 DrawCurrentPiece();
@@ -98,7 +98,7 @@ namespace Hextris.WPF
             }
         }
 
-        void DrawBackGround ()
+        void DrawBackground ()
         {
             int j = (int)imageGame.ActualHeight - BOTTOM_INDENT;
 
