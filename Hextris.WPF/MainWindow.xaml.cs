@@ -18,10 +18,10 @@ namespace Hextris.WPF
         int HEX_SIZE = 14; 
         int HEX_RATIO = 900; //of a 1000 for aspect ratio
 
+        int BOTTOM_INDENT = 50;
+
         int HEX_COS30;
-
-        int BOTTOM_INDENT = 30;
-
+      
         DispatcherTimer gameTimer;
 
         Point[,] gameField;
@@ -29,6 +29,7 @@ namespace Hextris.WPF
         GameBoard oGame = new GameBoard();
 
         WriteableBitmap gameboardBmp;
+        WriteableBitmap previewBmp;
 
         public MainWindow()
         {
@@ -36,9 +37,12 @@ namespace Hextris.WPF
             gameboardBmp = BitmapFactory.New((int)imageContainer.Width, (int)imageContainer.Height);
             imageGame.Source = gameboardBmp;
 
+            previewBmp = BitmapFactory.New((int)imagePreviewContainer.Width, (int)imagePreviewContainer.Height);
+            imagePreview.Source = previewBmp;
+
             gameField = new Point[GameBoard.GAME_WIDTH, GameBoard.GAME_HEIGHT];
 
-            HEX_COS30 = HEX_SIZE * 900 / 1000;
+            HEX_COS30 = HEX_SIZE * HEX_RATIO / 1000;
 
             gameTimer = new DispatcherTimer
             {
@@ -82,6 +86,9 @@ namespace Hextris.WPF
         {
             oGame.OnTimerTick();
             OnDraw();
+            lblScore.Content = oGame.Score;
+            lblLevel.Content = oGame.Level;
+            lblRowsCleared.Content = oGame.RowsCleared;
         }
 
         void OnDraw ()
@@ -93,14 +100,20 @@ namespace Hextris.WPF
                 DrawGameBoard();
                 DrawGhost();
                 DrawCurrentPiece();
+            }
+
+            using (previewBmp.GetBitmapContext())
+            {
+                previewBmp.Clear();
+
                 DrawPiecePreview();
-                DrawSavedPiece();
+       //         DrawSavedPiece();
             }
         }
 
         void DrawBackground ()
         {
-            int j = (int)imageGame.ActualHeight - BOTTOM_INDENT;
+            int j = (int)imageContainer.Height - BOTTOM_INDENT;
 
             int iRow = 0;
 
@@ -111,12 +124,12 @@ namespace Hextris.WPF
                     gameField[i * 2, iRow].X = i * HEX_SIZE * 3 + HEX_SIZE / 2;
                     gameField[i * 2, iRow].Y = j;
 
-                    DrawHexagon(gameField[i*2, iRow], Color.FromRgb(20, 80, 255), Color.FromRgb(30, 30, 40), HEX_SIZE, false);
+                    DrawHexagon(gameboardBmp, gameField[i*2, iRow], Color.FromRgb(20, 80, 255), Color.FromRgb(30, 30, 40), HEX_SIZE, false);
 
                     gameField[i * 2 + 1, iRow].X = i * HEX_SIZE * 3 + 2 * HEX_SIZE;
                     gameField[i * 2 + 1, iRow].Y = HEX_COS30 + gameField[i * 2, iRow].Y;
 
-                    DrawHexagon(gameField[i * 2 + 1, iRow], Color.FromRgb(20, 80, 255), Color.FromRgb(30, 30, 40), HEX_SIZE, false);
+                    DrawHexagon(gameboardBmp, gameField[i * 2 + 1, iRow], Color.FromRgb(20, 80, 255), Color.FromRgb(30, 30, 40), HEX_SIZE, false);
                 }
                 iRow++;
 
@@ -132,7 +145,7 @@ namespace Hextris.WPF
                 {
                     if (oGame.GetBoardHex(i, j).ePiece == HexType.GamePiece)
                     {
-                        DrawHexagon(gameField[i,j],
+                        DrawHexagon(gameboardBmp, gameField[i,j],
                             GetColor((PieceType)oGame.GetBoardHex(i, j).indexColor, false),
                             GetColor((PieceType)oGame.GetBoardHex(i, j).indexColor, true),
                             HEX_SIZE, false);
@@ -166,7 +179,7 @@ namespace Hextris.WPF
 
                         if (y < oGame.GetNumRows())
                         {
-                            DrawHexagon(gameField[x, y], 
+                            DrawHexagon(gameboardBmp, gameField[x, y], 
                                 GetColor(currentPiece.PieceType, false),
                                 GetColor(currentPiece.PieceType, true),
                                 HEX_SIZE, false);
@@ -219,7 +232,7 @@ namespace Hextris.WPF
 
                         if (y < oGame.GetNumRows())
                         {
-                            DrawHexagon(gameField[x,y],
+                            DrawHexagon(gameboardBmp, gameField[x,y],
                                 GetColor(ghostPiece.PieceType, true),
                                 Colors.Transparent,
                                 HEX_SIZE, false);
@@ -231,7 +244,32 @@ namespace Hextris.WPF
 
         void DrawPiecePreview ()
         {
+            GamePiece previewPiece;
+            int yOffset = 0;
 
+            for (int i = 0; i < 4; i++)
+            {
+                if (i % 2 == 0)
+                    yOffset++;
+
+                for (int j = 1; j < 5; j++)
+                {
+                    for (int k = 0; k < 3; k++)
+                    {
+                        previewPiece = oGame.GetPreviewPiece(k);
+
+                        int y = GameBoard.GAME_HEIGHT - (4 * (k + 1)) - j - yOffset;
+
+                        if (previewPiece.GetHex(i, j).ePiece == HexType.GamePiece)
+                        {
+                            DrawHexagon(previewBmp, gameField[i, y],
+                                    GetColor(previewPiece.PieceType, false),
+                                    GetColor(previewPiece.PieceType, true),
+                                    HEX_SIZE, false);
+                        }
+                    }
+                }
+            }
         }
 
         void DrawSavedPiece ()
@@ -239,7 +277,7 @@ namespace Hextris.WPF
 
         }
 
-        void DrawHexagon(Point location, Color outline, Color fill, int size, bool highlight)
+        void DrawHexagon(WriteableBitmap bitmap, Point location, Color outline, Color fill, int size, bool highlight)
         {
             int[] ptHex = new int[14];
 
@@ -250,10 +288,10 @@ namespace Hextris.WPF
             ptHex[3] = ptHex[1];
 
             ptHex[4] = ptHex[2] + size / 2;
-            ptHex[5] = ptHex[3] + size * HEX_RATIO / 1000;
+            ptHex[5] = ptHex[3] + HEX_COS30;
 
             ptHex[6] = ptHex[2];
-            ptHex[7] = ptHex[5] + size * HEX_RATIO / 1000;
+            ptHex[7] = ptHex[5] + HEX_COS30;
 
             ptHex[8] = ptHex[0];
             ptHex[9] = ptHex[7];
@@ -264,8 +302,8 @@ namespace Hextris.WPF
             ptHex[12] = ptHex[0];
             ptHex[13] = ptHex[1];
 
-            gameboardBmp.FillPolygon(ptHex, fill);
-            gameboardBmp.DrawPolylineAa(ptHex, outline);
+            bitmap.FillPolygon(ptHex, fill);
+            bitmap.DrawPolylineAa(ptHex, outline);
         }
 
         void DrawHexagonShapes (Point location, Color outline, Color fill, int size, bool highlight)
@@ -280,9 +318,9 @@ namespace Hextris.WPF
             ptHex[1].X = ptHex[0].X + size;
             ptHex[1].Y = ptHex[0].Y;
             ptHex[2].X = ptHex[1].X + size / 2;
-            ptHex[2].Y = ptHex[1].Y + size * HEX_RATIO / 1000;
+            ptHex[2].Y = ptHex[1].Y + HEX_COS30;
             ptHex[3].X = ptHex[1].X;
-            ptHex[3].Y = ptHex[2].Y + size * HEX_RATIO / 1000;
+            ptHex[3].Y = ptHex[2].Y + HEX_COS30;
             ptHex[4].X = ptHex[0].X;
             ptHex[4].Y = ptHex[3].Y;
             ptHex[5].X = ptHex[0].X - size / 2;

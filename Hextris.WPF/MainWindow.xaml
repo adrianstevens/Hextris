@@ -11,16 +11,35 @@
 
     <Grid Background="Black" VerticalAlignment="Top" >
         <Grid.ColumnDefinitions>
-            
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="*" />
+
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
             <RowDefinition Height="30" />
         </Grid.RowDefinitions>
+
+        <Grid Grid.Column="0">
+            <StackPanel>
+                <Label Content="Level:" Foreground="White" />
+                <Label x:Name="lblLevel" Foreground="White" />
+                <Label Content="Score:" Foreground="White" />
+                <Label x:Name="lblScore" Foreground="White" />
+                <Label Content="Rows cleared:" Foreground="White" />
+                <Label x:Name="lblRowsCleared" Foreground="White" />
+            </StackPanel>
+            
+        </Grid>
         
-        <Grid Margin="10"
-            x:Name="imageContainer" Width="320" Height="500" >
+        <Grid Grid.Column="1"
+            x:Name="imageContainer" Width="240" Height="540" >
             <Image x:Name="imageGame" />
+        </Grid>
+        <Grid Grid.Column="2" Background="MidnightBlue"
+            x:Name="imagePreviewContainer" Width="120" Height="540" >
+            <Image x:Name="imagePreview" />
         </Grid>
         
     </Grid>
