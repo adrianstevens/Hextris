@@ -19,22 +19,22 @@ namespace Hextris.Core
 
     public class GamePiece
     {
-        Random rand = new Random();
+        static Random rand = new Random();
 
         static byte[,] pieces;
         static byte[] piecesData;
 
         GameHexagon[,] data = new GameHexagon[5, 5];
 
-        PieceType pieceType;
+        public PieceType PieceType { get; private set; }
         int xPos, yPos;
         
         public GamePiece ()
         {
-            pieceType = GetRandomType();
+            PieceType = GetRandomType();
             Init ();
 
-            SetPieceType(pieceType); //for now
+            SetPieceType(PieceType); //for now
         }
 
         PieceType GetRandomType ()
@@ -123,9 +123,9 @@ namespace Hextris.Core
             SetPieceType(pieceType);
         }
 
-        public void SetPieceType (PieceType ePiece)
+        public void SetPieceType (PieceType pieceType)
         {
-            var index = (int)ePiece;
+            var index = (int)pieceType;
 
             for (int y = 0; y < 5; ++y)
             {
@@ -137,6 +137,8 @@ namespace Hextris.Core
                         data[x, y].ePiece = HexType.Blank; 
                 }
             }
+
+            PieceType = pieceType;
         }
 
         public void Rotate ()
@@ -178,20 +180,14 @@ namespace Hextris.Core
                 for (int j = 0; j < 5; j++)
                 {
                     data[i,j] = piece.GetHex(i, j);
-
                 }
             }
 
             xPos = piece.GetX();
             yPos = piece.GetY();
-            pieceType = piece.GetPieceType();
+            PieceType = piece.PieceType;
 
             return true;
-        }
-
-        public PieceType GetPieceType ()
-        {
-            return pieceType;
         }
 
         public void SetPosition(int x, int y)

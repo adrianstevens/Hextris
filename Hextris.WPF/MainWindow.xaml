@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="600" Width="800" Loaded="Window_Loaded">
 
-    <Grid Background="BlueViolet" >
+    <Grid Background="Black" VerticalAlignment="Top" >
         <Grid x:Name="imageContainer" Width="320" Height="640">
             <Image x:Name="imageGame" />
         </Grid>

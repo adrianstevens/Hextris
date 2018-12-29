@@ -98,7 +98,7 @@
             return ghostPiece;
         }
 
-        void Reset ()
+        void ResetGame ()
         {
             score = 0;
             rowsCleared = 0;
@@ -108,8 +108,6 @@
 
             for (int i = 0; i < NUM_PIECE_TYPES; i++)
                 stats[i] = 0;
-
-            ResetBoard();
 
             savedPiece.SetRandomPieceType();
             currentPiece.SetPosition(4, GAME_HEIGHT);
@@ -147,14 +145,13 @@
             oldPiece.SetPosition(4, GAME_HEIGHT);
             piecePreviews[NUM_PREVIEWS - 1] = oldPiece;
 
-            stats[(int)currentPiece.GetPieceType()]++;
+            stats[(int)currentPiece.PieceType]++;
         }
 
         void NewGame ()
         {
-            Reset();
-
-            CalcGhost();
+            ResetBoard();
+            ResetGame();
 
             switch (gameType)
             {
@@ -282,7 +279,7 @@
                         int y2 = currentPiece.GetY() - j - iYOffset;
 
                         gameField[x2,y2].ePiece = HexType.GamePiece;
-                        gameField[x2,y2].indexColor = (int)currentPiece.GetPieceType();
+                        gameField[x2,y2].indexColor = (int)currentPiece.PieceType;
                     }
                 }
             }
