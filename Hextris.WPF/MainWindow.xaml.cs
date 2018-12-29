@@ -20,19 +20,19 @@ namespace Hextris.WPF
 
         int HEX_COS30;
 
-        int BOTTOM_INDENT = 10;
-        static int GAME_WIDTH = 10;
-        static int GAME_HEIGHT = 40;
+        int BOTTOM_INDENT = 30;
 
         DispatcherTimer gameTimer;
 
-        Point[,] gameField = new Point[GAME_WIDTH, GAME_HEIGHT];
+        Point[,] gameField;
 
         GameBoard oGame = new GameBoard();
 
         public MainWindow()
         {
             InitializeComponent();
+
+            gameField = new Point[GameBoard.GAME_WIDTH, GameBoard.GAME_HEIGHT];
 
             HEX_COS30 = HEX_SIZE * 900 / 1000;
 
@@ -93,9 +93,9 @@ namespace Hextris.WPF
 
             int iRow = 0;
 
-            while (j > 0)
+            while (j > 0 && iRow < GameBoard.GAME_HEIGHT)
             {
-                for (int i = 0; i < GAME_WIDTH / 2; i++)
+                for (int i = 0; i < GameBoard.GAME_WIDTH / 2; i++)
                 {
                     gameField[i * 2, iRow].X = i * HEX_SIZE * 3 + HEX_SIZE / 2;
                     gameField[i * 2, iRow].Y = j;
@@ -116,29 +116,38 @@ namespace Hextris.WPF
 
         void DrawGameBoard ()
         {
-
+            for (int i = 0; i < GameBoard.GAME_WIDTH; i++)
+            {
+                for (int j = 0; j < oGame.GetNumRows(); j++)
+                {
+                    if (oGame.GetBoardHex(i, j).ePiece == HexType.GamePiece)
+                    {
+                        DrawHexagon(canvasGame, gameField[i,j], Colors.LimeGreen, Colors.GreenYellow, HEX_SIZE, false);
+                    }
+                }
+            }
         }
 
         void DrawCurrentPiece ()
         {
             int iYOffset = 0;
 
-            var oPiece = oGame.GetCurrentPiece();
+            var currentPiece = oGame.GetCurrentPiece();
 
             for (int i = 0; i < 5; i++)
             {
-                if ((i + oPiece.GetX()) % 2 == 0)
+                if ((i + currentPiece.GetX()) % 2 == 0)
                     iYOffset++;
 
                 for (int j = 0; j < 5; j++)
                 {
-                    if (oPiece.GetHex(i, j).ePiece == HexType.GamePiece)
+                    if (currentPiece.GetHex(i, j).ePiece == HexType.GamePiece)
                     {
                         //so ... the current piece stores its position relative to the grid (bottom left being 0,0 ... this are grid points not screen points
                         //m_ptGameField is an array of screen points the size of the current grid
                         //so we get the piece position (which is top left
-                        int X = oPiece.GetX();
-                        int Y = oPiece.GetY();
+                        int X = currentPiece.GetX();
+                        int Y = currentPiece.GetY();
                         X += i;
                         Y -= (j + iYOffset);
 

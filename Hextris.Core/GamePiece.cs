@@ -34,7 +34,7 @@ namespace Hextris.Core
             pieceType = GetRandomType();
             Init ();
 
-            SetPiece(pieceType); //for now
+            SetPieceType(pieceType); //for now
         }
 
         PieceType GetRandomType ()
@@ -44,7 +44,7 @@ namespace Hextris.Core
             return (PieceType)value;
         }
 
-        public void Init()
+        void Init()
         {
             piecesData = new byte[]  { 0,0,0,0,0,
                                         0,0,0,0,0,
@@ -111,14 +111,21 @@ namespace Hextris.Core
             {
                 for (int j = 0; j < 5; j++)
                 {
-                    data[i, j] = new GameHexagon();
+                    if(data[i,j] == null)
+                        data[i, j] = new GameHexagon();
                 }
             }
         }
 
-        void SetPiece (PieceType ePiece)
+        public void SetRandomPieceType ()
         {
-            int index = (int)ePiece;
+            var pieceType = (PieceType)(rand.Next() % 10);
+            SetPieceType(pieceType);
+        }
+
+        public void SetPieceType (PieceType ePiece)
+        {
+            var index = (int)ePiece;
 
             for (int y = 0; y < 5; ++y)
             {

@@ -29,8 +29,8 @@
 
     public class GameBoard
     {
-        static int GAME_WIDTH = 10;
-        static int GAME_HEIGHT = 40;
+        public static int GAME_WIDTH = 10;
+        public static int GAME_HEIGHT = 10;
         static int NUM_PIECE_TYPES = (int)PieceType.count;
         static int NUM_PREVIEWS = 3;
 
@@ -60,14 +60,15 @@
 
         public GameBoard()
         {
+            currentPiece = new GamePiece();
             savedPiece = new GamePiece();
             ghostPiece = new GamePiece();
 
             for (int i = 0; i < NUM_PREVIEWS; i++)
             {
                 piecePreviews[i] = new GamePiece();
-                piecePreviews[i].Init();
-                piecePreviews[i].SetPosition(4, 20);
+                piecePreviews[i].SetRandomPieceType();
+                piecePreviews[i].SetPosition(4, GAME_HEIGHT);
             }
 
             NewGame();
@@ -87,6 +88,11 @@
             }
         }
 
+        public GameHexagon GetBoardHex(int x, int y)
+        {
+            return gameField[x, y];
+        }
+
         void Reset ()
         {
             score = 0;
@@ -100,11 +106,12 @@
 
             ResetBoard();
 
-            savedPiece.Init();
+            savedPiece.SetRandomPieceType();
+            currentPiece.SetPosition(4, GAME_HEIGHT);
 
             //reset the preview pieces
             for (int i = 0; i < NUM_PREVIEWS; i++)
-                piecePreviews[i].Init();
+                piecePreviews[i].SetRandomPieceType();
 
             NewPiece();
             CalcGhost();
@@ -131,8 +138,8 @@
             for (int i = 0; i < NUM_PREVIEWS - 1; i++)
                 piecePreviews[i] = piecePreviews[i + 1];
 
-            oldPiece.Init();
-            oldPiece.SetPosition(-5, rows + 2);
+            oldPiece.SetRandomPieceType();
+            oldPiece.SetPosition(4, GAME_HEIGHT);
             piecePreviews[NUM_PREVIEWS - 1] = oldPiece;
 
             stats[(int)currentPiece.GetPieceType()]++;
@@ -140,13 +147,7 @@
 
         void NewGame ()
         {
-            savedPiece = new GamePiece();
-            currentPiece = new GamePiece();
-            currentPiece.SetPosition(2, 10);
-
-            int iTime = 0;
-
-            ResetBoard();
+            Reset();
 
             CalcGhost();
 
