@@ -6,7 +6,12 @@
         xmlns:local="clr-namespace:Hextris.WPF"
         mc:Ignorable="d"
         Title="MainWindow" Height="600" Width="800" Loaded="Window_Loaded">
-    <Grid>
-        <Canvas x:Name="canvasGame" Background="Black"></Canvas>
+
+    <Grid Background="BlueViolet" >
+        <Grid x:Name="imageContainer" Width="320" Height="640">
+            <Image x:Name="imageGame" />
+        </Grid>
+        
     </Grid>
+        
 </Window>

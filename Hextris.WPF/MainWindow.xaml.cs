@@ -1,11 +1,14 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using System.Windows.Shapes;
 using Hextris.Core;
 using System.Windows.Threading;
 using System;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using Hextris.Core;
+
 
 namespace Hextris.WPF
 {
@@ -28,9 +31,13 @@ namespace Hextris.WPF
 
         GameBoard oGame = new GameBoard();
 
+        WriteableBitmap gameboardBmp;
+
         public MainWindow()
         {
             InitializeComponent();
+            gameboardBmp = BitmapFactory.New((int)imageContainer.Width, (int)imageContainer.Height);
+            imageGame.Source = gameboardBmp;
 
             gameField = new Point[GameBoard.GAME_WIDTH, GameBoard.GAME_HEIGHT];
 
@@ -79,17 +86,30 @@ namespace Hextris.WPF
 
         void OnDraw ()
         {
-            DrawBackGround();
-            DrawGameBoard();
-            DrawGhost();
-            DrawCurrentPiece();
-            DrawPiecePreview();
-            DrawSavedPiece();
+            using (gameboardBmp.GetBitmapContext())
+            {
+                gameboardBmp.Clear();
+
+                gameboardBmp.DrawLine(0, 1, 10, 10, Colors.Blue);
+
+
+                gameboardBmp.DrawRectangle(10, 10, 30, 30, Colors.Gray);
+
+              
+                DrawBackGround();
+                DrawGameBoard();
+                DrawGhost();
+                DrawCurrentPiece();
+                DrawPiecePreview();
+                DrawSavedPiece();
+
+
+            }
         }
 
         void DrawBackGround ()
         {
-            int j = (int)canvasGame.ActualHeight - BOTTOM_INDENT;
+            int j = (int)imageGame.ActualHeight - BOTTOM_INDENT;
 
             int iRow = 0;
 
@@ -100,12 +120,12 @@ namespace Hextris.WPF
                     gameField[i * 2, iRow].X = i * HEX_SIZE * 3 + HEX_SIZE / 2;
                     gameField[i * 2, iRow].Y = j;
 
-                    DrawHexagon(canvasGame, gameField[i*2, iRow], Color.FromRgb(20, 80, 255), Color.FromRgb(30, 30, 40), HEX_SIZE, false);
+                    DrawHexagon(gameField[i*2, iRow], Color.FromRgb(20, 80, 255), Color.FromRgb(30, 30, 40), HEX_SIZE, false);
 
                     gameField[i * 2 + 1, iRow].X = i * HEX_SIZE * 3 + 2 * HEX_SIZE;
                     gameField[i * 2 + 1, iRow].Y = HEX_COS30 + gameField[i * 2, iRow].Y;
 
-                    DrawHexagon(canvasGame, gameField[i * 2 + 1, iRow], Color.FromRgb(20, 80, 255), Color.FromRgb(30, 30, 40), HEX_SIZE, false);
+                    DrawHexagon(gameField[i * 2 + 1, iRow], Color.FromRgb(20, 80, 255), Color.FromRgb(30, 30, 40), HEX_SIZE, false);
                 }
                 iRow++;
 
@@ -122,7 +142,7 @@ namespace Hextris.WPF
                 {
                     if (oGame.GetBoardHex(i, j).ePiece == HexType.GamePiece)
                     {
-                        DrawHexagon(canvasGame, gameField[i,j], Colors.LimeGreen, Colors.GreenYellow, HEX_SIZE, false);
+                        DrawHexagon(gameField[i,j], Colors.LimeGreen, Colors.GreenYellow, HEX_SIZE, false);
                     }
                 }
             }
@@ -153,7 +173,7 @@ namespace Hextris.WPF
 
                         if (Y < oGame.GetNumRows())
                         {
-                            DrawHexagon(canvasGame, gameField[X, Y], Colors.LimeGreen, Colors.GreenYellow, HEX_SIZE, false);
+                            DrawHexagon(gameField[X, Y], Colors.LimeGreen, Colors.GreenYellow, HEX_SIZE, false);
                         }
                     }
                 }
@@ -180,7 +200,7 @@ namespace Hextris.WPF
 
                         if (y < oGame.GetNumRows())
                         {
-                            DrawHexagon(canvasGame, gameField[x,y], Colors.LimeGreen, Colors.GreenYellow, HEX_SIZE, false);
+                            DrawHexagon(gameField[x,y], Colors.LimeGreen, Colors.GreenYellow, HEX_SIZE, false);
                         }
                     }
                 }
@@ -197,7 +217,28 @@ namespace Hextris.WPF
 
         }
 
-        void DrawHexagon (Canvas canvas, Point location, Color outline, Color fill, int size, bool highlight)
+        void DrawHexagon(Point location, Color outline, Color fill, int size, bool highlight)
+        {
+            int[] ptHex = new int[12];
+
+            ptHex[0] = (int)location.X;
+            ptHex[1] = (int)location.Y;
+            ptHex[2] = ptHex[0] + size;
+            ptHex[3] = ptHex[1];
+            ptHex[4] = ptHex[2] + size / 2;
+            ptHex[5] = ptHex[3] + size * HEX_RATIO / 1000;
+            ptHex[6] = ptHex[2];
+            ptHex[7] = ptHex[5] + size * HEX_RATIO / 1000;
+            ptHex[8] = ptHex[0];
+            ptHex[9] = ptHex[7];
+            ptHex[10] = ptHex[0] - size / 2;
+            ptHex[11] = ptHex[5];
+
+            gameboardBmp.FillPolygon(ptHex, fill);
+        }
+
+
+        void DrawHexagonShapes (Point location, Color outline, Color fill, int size, bool highlight)
         {
             Point[] ptHex = new Point[6];
 
@@ -226,7 +267,7 @@ namespace Hextris.WPF
             polygon.Fill = brushFill;
             polygon.Stroke = brushOutline;
 
-            canvas.Children.Add(polygon);
+           // canvasGame.Children.Add(polygon);
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
