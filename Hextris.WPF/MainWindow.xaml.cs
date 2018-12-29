@@ -162,7 +162,29 @@ namespace Hextris.WPF
 
         void DrawGhost ()
         {
+            var ghostPiece = oGame.GetGhost();
 
+            int iYOffset = 0;
+
+            for (int i = 0; i < 5; i++)
+            {
+                if ((i + ghostPiece.GetX()) % 2 == 0)
+                    iYOffset++;
+
+                for (int j = 0; j < 5; j++)
+                {
+                    if (ghostPiece.GetHex(i, j).ePiece == HexType.GamePiece)
+                    {
+                        var x = ghostPiece.GetX() + i;
+                        var y = ghostPiece.GetY() - j - iYOffset;
+
+                        if (y < oGame.GetNumRows())
+                        {
+                            DrawHexagon(canvasGame, gameField[x,y], Colors.LimeGreen, Colors.GreenYellow, HEX_SIZE, false);
+                        }
+                    }
+                }
+            }
         }
 
         void DrawPiecePreview ()

@@ -30,7 +30,7 @@
     public class GameBoard
     {
         public static int GAME_WIDTH = 10;
-        public static int GAME_HEIGHT = 10;
+        public static int GAME_HEIGHT = 20;
         static int NUM_PIECE_TYPES = (int)PieceType.count;
         static int NUM_PREVIEWS = 3;
 
@@ -91,6 +91,11 @@
         public GameHexagon GetBoardHex(int x, int y)
         {
             return gameField[x, y];
+        }
+
+        public GamePiece GetGhost()
+        {
+            return ghostPiece;
         }
 
         void Reset ()
@@ -328,7 +333,18 @@
 
         private void CalcGhost ()
         {
+            ghostPiece.CopyPieceState(currentPiece);
 
+            if (CheckCollision(ghostPiece))
+                return;
+
+            do
+            {
+                ghostPiece.MoveDown();
+            }
+            while (CheckCollision(ghostPiece) == false);
+
+            ghostPiece.MoveUp();
         }
 
         private void CheckForCompleteLines ()
