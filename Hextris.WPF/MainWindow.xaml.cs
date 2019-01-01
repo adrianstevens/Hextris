@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Hextris.Core;
+using Plugin.SimpleAudioPlayer;
 
 namespace Hextris.WPF
 {
@@ -23,6 +24,7 @@ namespace Hextris.WPF
         int HEX_COS30;
       
         DispatcherTimer gameTimer;
+        SimpleAudioPlayerWPF audioPlayer;
 
         Point[,] gameField;
 
@@ -34,6 +36,9 @@ namespace Hextris.WPF
         public MainWindow()
         {
             InitializeComponent();
+
+            audioPlayer = new SimpleAudioPlayerWPF();
+
             gameboardBmp = BitmapFactory.New((int)imageContainer.Width, (int)imageContainer.Height);
             imageGame.Source = gameboardBmp;
 
@@ -60,15 +65,23 @@ namespace Hextris.WPF
             {
                 case Key.Left:
                     oGame.OnLeft();
+                    audioPlayer.Load(@"levelup.wav");
+                    audioPlayer.Play();
                     break;
                 case Key.Right:
                     oGame.OnRight();
+                    audioPlayer.Load(@"lineclear.wav");
+                    audioPlayer.Play();
                     break;
                 case Key.Down:
                     oGame.OnDown();
+                    audioPlayer.Load(@"down.wav");
+                    audioPlayer.Play();
                     break;
                 case Key.Up:
                     oGame.OnRotate();
+                    audioPlayer.Load(@"move.wav");
+                    audioPlayer.Play();
                     break;
                 case Key.R:
                     oGame.ResetBoard();
