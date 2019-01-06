@@ -15,7 +15,6 @@ namespace Hextris.WPF
     /// </summary>
     public partial class MainWindow : Window
     {
-        //we'll add rendering code here for now but it should be moved into a custom class or control
         int HEX_SIZE = 14; 
         int HEX_RATIO = 900; //of a 1000 for aspect ratio
         int BOTTOM_INDENT = 50;
@@ -87,8 +86,6 @@ namespace Hextris.WPF
                 case Key.R:
                     hexGame.NewGame();
                     break;
-                case Key.S:
-                    break;
                 case Key.Space:
                     hexGame.OnDrop();
                     break;
@@ -125,8 +122,14 @@ namespace Hextris.WPF
                 gameboardBmp.Clear();
                 DrawBackground();
                 DrawGameBoard();
-                DrawGhost();
-                DrawCurrentPiece();
+
+                DrawPiece(hexGame.GhostPiece,
+                    GetPieceColor(hexGame.CurrentPiece.PieceType, true),
+                    GetPieceColor(hexGame.CurrentPiece.PieceType, true, true));
+
+                DrawPiece(hexGame.CurrentPiece,
+                    GetPieceColor(hexGame.CurrentPiece.PieceType, false),
+                    GetPieceColor(hexGame.CurrentPiece.PieceType, true));
             }
 
             using (previewBmp.GetBitmapContext())
@@ -174,42 +177,9 @@ namespace Hextris.WPF
                     if (hexGame.GetBoardHex(i, j).ePiece == HexType.GamePiece)
                     {
                         DrawHexagon(gameboardBmp, gameField[i,j],
-                            GetColor((PieceType)hexGame.GetBoardHex(i, j).indexColor, false),
-                            GetColor((PieceType)hexGame.GetBoardHex(i, j).indexColor, true),
+                            GetPieceColor((PieceType)hexGame.GetBoardHex(i, j).indexColor, false),
+                            GetPieceColor((PieceType)hexGame.GetBoardHex(i, j).indexColor, true),
                             HEX_SIZE, false);
-                    }
-                }
-            }
-        }
-
-        void DrawCurrentPiece ()
-        {
-            int yOffset = 0;
-
-            for (int i = 0; i < 5; i++)
-            {
-                if ((i + hexGame.CurrentPiece.GetX()) % 2 == 0)
-                    yOffset++;
-
-                for (int j = 0; j < 5; j++)
-                {
-                    if (hexGame.CurrentPiece.GetHex(i, j).ePiece == HexType.GamePiece)
-                    {
-                        //so ... the current piece stores its position relative to the grid (bottom left being 0,0 ... this are grid points not screen points
-                        //gameField is an array of screen points the size of the current grid
-                        //so we get the piece position (which is top left
-                        int x = hexGame.CurrentPiece.GetX();
-                        int y = hexGame.CurrentPiece.GetY();
-                        x += i;
-                        y -= (j + yOffset);
-
-                        if (y < GameBoard.GAME_HEIGHT && x < GameBoard.GAME_WIDTH)
-                        {
-                            DrawHexagon(gameboardBmp, gameField[x, y], 
-                                GetColor(hexGame.CurrentPiece.PieceType, false),
-                                GetColor(hexGame.CurrentPiece.PieceType, true),
-                                HEX_SIZE, false);
-                        }
                     }
                 }
             }
@@ -226,42 +196,38 @@ namespace Hextris.WPF
 	        {Color.FromRgb(0,191,0),      Color.FromRgb(0,255,0),       Color.FromRgb(0,127,0)},			//green
 	        {Color.FromRgb(191,191,0),    Color.FromRgb(255,255,0),     Color.FromRgb(127,127,0)},			//yellow
 	        {Color.FromRgb(191,191,191),  Color.FromRgb(255,255,255),   Color.FromRgb(127,127,127)},		//white
-	        {Color.FromRgb(127,127,127),  Color.FromRgb(191,191,191),   Color.FromRgb(64,64,64)},
+	        {Color.FromRgb(127,127,127),  Color.FromRgb(191,191,191),   Color.FromRgb(64,64,64)},           //gray
         };
 
-        Color GetColor(PieceType pieceType, bool isFill, bool isGhost = false)
+        Color GetPieceColor(PieceType pieceType, bool isFill, bool isGhost = false)
         {
-            var clr = isFill ? pieceColors[(int)pieceType, 0] : pieceColors[(int)pieceType, 2];
+            var color = isFill ? pieceColors[(int)pieceType, 0] : pieceColors[(int)pieceType, 2];
 
-            if (isGhost) clr.A = 60;
+            if (isGhost) color.A = 60;
 
-            return clr;
+            return color;
         }
 
-        void DrawGhost ()
+        void DrawPiece(GamePiece piece, Color outline, Color fill)
         {
-            var ghostPiece = hexGame.GetGhost();
-
-            int iYOffset = 0;
+            int yOffset = 0;
 
             for (int i = 0; i < 5; i++)
             {
-                if ((i + ghostPiece.GetX()) % 2 == 0)
-                    iYOffset++;
+                if ((i + piece.GetX()) % 2 == 0)
+                    yOffset++;
 
                 for (int j = 0; j < 5; j++)
                 {
-                    if (ghostPiece.GetHex(i, j).ePiece == HexType.GamePiece)
+                    if (piece.GetHex(i, j).ePiece == HexType.GamePiece)
                     {
-                        var x = ghostPiece.GetX() + i;
-                        var y = ghostPiece.GetY() - j - iYOffset;
+                        var x = piece.GetX() + i;
+                        var y = piece.GetY() - j - yOffset;
 
                         if (y < GameBoard.GAME_HEIGHT)
                         {
-                            DrawHexagon(gameboardBmp, gameField[x,y],
-                                GetColor(ghostPiece.PieceType, true),
-                                GetColor(ghostPiece.PieceType, true, true),
-                                // Colors.Transparent,
+                            DrawHexagon(gameboardBmp, gameField[x, y],
+                                outline, fill,
                                 HEX_SIZE, false);
                         }
                     }
@@ -288,8 +254,8 @@ namespace Hextris.WPF
                     if (previewPiece.GetHex(i, j).ePiece == HexType.GamePiece)
                     {
                         DrawHexagon(previewBmp, gameField[i, y],
-                                GetColor(previewPiece.PieceType, false),
-                                GetColor(previewPiece.PieceType, true),
+                                GetPieceColor(previewPiece.PieceType, false),
+                                GetPieceColor(previewPiece.PieceType, true),
                                 HEX_SIZE, false);
                     }
                 }
@@ -302,64 +268,21 @@ namespace Hextris.WPF
 
             ptHex[0] = (int)location.X;
             ptHex[1] = (int)location.Y;
-
             ptHex[2] = ptHex[0] + size;
             ptHex[3] = ptHex[1];
-
             ptHex[4] = ptHex[2] + size / 2;
             ptHex[5] = ptHex[3] + HEX_COS30;
-
             ptHex[6] = ptHex[2];
             ptHex[7] = ptHex[5] + HEX_COS30;
-
             ptHex[8] = ptHex[0];
             ptHex[9] = ptHex[7];
-
             ptHex[10] = ptHex[8] - size / 2;
             ptHex[11] = ptHex[5];
-
             ptHex[12] = ptHex[0];
             ptHex[13] = ptHex[1];
 
             bitmap.FillPolygon(ptHex, fill);
             bitmap.DrawPolylineAa(ptHex, outline);
-        }
-
-        void DrawHexagonShapes (Point location, Color outline, Color fill, int size, bool highlight)
-        {
-            Point[] ptHex = new Point[6];
-
-            var brushOutline = new SolidColorBrush(outline);
-            var brushFill = new SolidColorBrush(fill);
-
-            ptHex[0].X = location.X;
-            ptHex[0].Y = location.Y;
-            ptHex[1].X = ptHex[0].X + size;
-            ptHex[1].Y = ptHex[0].Y;
-            ptHex[2].X = ptHex[1].X + size / 2;
-            ptHex[2].Y = ptHex[1].Y + HEX_COS30;
-            ptHex[3].X = ptHex[1].X;
-            ptHex[3].Y = ptHex[2].Y + HEX_COS30;
-            ptHex[4].X = ptHex[0].X;
-            ptHex[4].Y = ptHex[3].Y;
-            ptHex[5].X = ptHex[0].X - size / 2;
-            ptHex[5].Y = ptHex[2].Y;
-
-            var polygon = new Polygon();
-            var collection = new PointCollection();
-            for (int i = 0; i < ptHex.Length; i++)
-                collection.Add(ptHex[i]);
-
-            polygon.Points = collection;
-            polygon.Fill = brushFill;
-            polygon.Stroke = brushOutline;
-
-           // canvasGame.Children.Add(polygon);
-        }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            OnDraw();
         }
     }
 }

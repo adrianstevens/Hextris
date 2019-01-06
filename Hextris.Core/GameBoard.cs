@@ -40,7 +40,6 @@ namespace Hextris.Core
     {
         public event EventHandler  OnLevelChanged;
 
-
         public static int GAME_WIDTH => 10;
         public static int GAME_HEIGHT => 20;
         readonly static int NUM_PIECE_TYPES = (int)PieceType.count;
@@ -57,7 +56,7 @@ namespace Hextris.Core
         readonly ClearedType[] clearedLines = new ClearedType[MAX_LINES];
 
         GamePiece savedPiece;
-        GamePiece ghostPiece;
+        public GamePiece GhostPiece { get; private set; }
         public GamePiece CurrentPiece { get; private set; }
         readonly GamePiece[] piecePreviews = new GamePiece[NUM_PIECE_TYPES];
 
@@ -91,7 +90,7 @@ namespace Hextris.Core
         {
             CurrentPiece = new GamePiece();
             savedPiece = new GamePiece();
-            ghostPiece = new GamePiece();
+            GhostPiece = new GamePiece();
 
             for (int i = 0; i < NUM_PREVIEWS; i++)
             {
@@ -124,11 +123,6 @@ namespace Hextris.Core
         public GameHexagon GetBoardHex(int x, int y)
         {
             return gameField[x, y];
-        }
-
-        public GamePiece GetGhost()
-        {
-            return ghostPiece;
         }
 
         void ResetGame()
@@ -343,11 +337,6 @@ namespace Hextris.Core
             }
         }
 
-        public GamePiece GetSavedPiece ()
-        {
-            return savedPiece;
-        }
-
         public GamePiece GetPreviewPiece(int index)
         {
             if (index < 0 || index > NUM_PREVIEWS)
@@ -388,18 +377,18 @@ namespace Hextris.Core
 
         private void CalcGhost ()
         {
-            ghostPiece.CopyPieceState(CurrentPiece);
+            GhostPiece.CopyPieceState(CurrentPiece);
 
-            if (CheckCollision(ghostPiece))
+            if (CheckCollision(GhostPiece))
                 return;
 
             do
             {
-                ghostPiece.MoveDown();
+                GhostPiece.MoveDown();
             }
-            while (CheckCollision(ghostPiece) == false);
+            while (CheckCollision(GhostPiece) == false);
 
-            ghostPiece.MoveUp();
+            GhostPiece.MoveUp();
         }
 
         private void CheckForCompleteLines ()
