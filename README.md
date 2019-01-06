@@ -1,5 +1,5 @@
 # Hextris
-Hextris clone on WPF - port of some old C++ code I wrote years ago (for mom). Code is VS2015 compatible.
+Hextris clone on WPF - port of some old C++ code I wrote years ago for mom (she requested a new version).
 
-Game is almost playable.
+Game is almost fuly playable.
 
