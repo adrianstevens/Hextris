@@ -65,29 +65,26 @@ namespace Hextris.WPF
             {
                 case Key.Left:
                     oGame.OnLeft();
-                    audioPlayer.Load(@"levelup.wav");
-                    audioPlayer.Play();
                     break;
                 case Key.Right:
                     oGame.OnRight();
-                    audioPlayer.Load(@"lineclear.wav");
-                    audioPlayer.Play();
                     break;
                 case Key.Down:
                     oGame.OnDown();
-                    audioPlayer.Load(@"down.wav");
-                    audioPlayer.Play();
                     break;
                 case Key.Up:
                     oGame.OnRotate();
-                    audioPlayer.Load(@"move.wav");
-                    audioPlayer.Play();
+                    break;
+                case Key.P:
+                    oGame.OnPause();
                     break;
                 case Key.R:
                     oGame.ResetBoard();
                     break;
                 case Key.S:
-                    oGame.OnSwitchPiece();
+               //     oGame.OnSwitchPiece();
+               //     audioPlayer.Load(@"switch.wav");
+               //     audioPlayer.Play();
                     break;
                 case Key.Space:
                     oGame.OnDrop();
@@ -123,7 +120,6 @@ namespace Hextris.WPF
                 previewBmp.Clear();
 
                 DrawPiecePreview();
-       //         DrawSavedPiece();
             }
         }
 
@@ -157,7 +153,7 @@ namespace Hextris.WPF
         {
             for (int i = 0; i < GameBoard.GAME_WIDTH; i++)
             {
-                for (int j = 0; j < oGame.GetNumRows(); j++)
+                for (int j = 0; j < GameBoard.GAME_HEIGHT; j++)
                 {
                     if (oGame.GetBoardHex(i, j).ePiece == HexType.GamePiece)
                     {
@@ -193,7 +189,7 @@ namespace Hextris.WPF
                         x += i;
                         y -= (j + iYOffset);
 
-                        if (y < oGame.GetNumRows())
+                        if (y < GameBoard.GAME_HEIGHT && x < GameBoard.GAME_WIDTH)
                         {
                             DrawHexagon(gameboardBmp, gameField[x, y], 
                                 GetColor(currentPiece.PieceType, false),
@@ -246,7 +242,7 @@ namespace Hextris.WPF
                         var x = ghostPiece.GetX() + i;
                         var y = ghostPiece.GetY() - j - iYOffset;
 
-                        if (y < oGame.GetNumRows())
+                        if (y < GameBoard.GAME_HEIGHT)
                         {
                             DrawHexagon(gameboardBmp, gameField[x,y],
                                 GetColor(ghostPiece.PieceType, true),
@@ -260,10 +256,6 @@ namespace Hextris.WPF
 
         void DrawPiecePreview ()
         {
-            previewBmp.DrawRectangle(10, 30, 110, 130, Colors.Gray);
-
-            GamePiece previewPiece;
-            GamePiece savedPiece = oGame.GetSavedPiece();
             int yOffset = 0;
 
             for (int i = 0; i < 4; i++)
@@ -274,42 +266,24 @@ namespace Hextris.WPF
                 for (int j = 1; j < 5; j++)
                 {
                     int x = i + 10;
-                    int y = GameBoard.GAME_HEIGHT + 1 - j - yOffset;
+                    int y = GameBoard.GAME_HEIGHT - j - yOffset;
 
-                    if (savedPiece.GetHex(i, j).ePiece == HexType.GamePiece)
+                    var previewPiece = oGame.GetPreviewPiece(0);
+
+                    if (previewPiece.GetHex(i, j).ePiece == HexType.GamePiece)
                     {
                         DrawHexagon(previewBmp, gameField[i, y],
-                                GetColor(savedPiece.PieceType, false),
-                                GetColor(savedPiece.PieceType, true),
+                                GetColor(previewPiece.PieceType, false),
+                                GetColor(previewPiece.PieceType, true),
                                 HEX_SIZE, false);
-                    }
-
-                    for (int k = 0; k < 3; k++)
-                    {
-                        previewPiece = oGame.GetPreviewPiece(k);
-
-                        y = GameBoard.GAME_HEIGHT - (4 * (k + 1)) - j - yOffset;
-
-                        if (previewPiece.GetHex(i, j).ePiece == HexType.GamePiece)
-                        {
-                            DrawHexagon(previewBmp, gameField[i, y],
-                                    GetColor(previewPiece.PieceType, false),
-                                    GetColor(previewPiece.PieceType, true),
-                                    HEX_SIZE, false);
-                        }
                     }
                 }
             }
         }
 
-        void DrawSavedPiece ()
-        {
-
-        }
-
         void DrawHexagon(WriteableBitmap bitmap, Point location, Color outline, Color fill, int size, bool highlight)
         {
-            int[] ptHex = new int[14];
+            var ptHex = new int[14];
 
             ptHex[0] = (int)location.X;
             ptHex[1] = (int)location.Y;

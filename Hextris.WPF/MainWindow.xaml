@@ -23,11 +23,11 @@
 
         <Grid Grid.Column="0">
             <StackPanel>
-                <Label Content="Level:" Foreground="White" />
-                <Label x:Name="lblLevel" Foreground="White" />
-                <Label Content="Score:" Foreground="White" />
-                <Label x:Name="lblScore" Foreground="White" />
-                <Label Content="Rows cleared:" Foreground="White" />
+                <Label Content="Level:" Foreground="White" FontSize="20" />
+                <Label x:Name="lblLevel" Foreground="White" FontSize="20" />
+                <Label Content="Score:" Foreground="White" FontSize="20" />
+                <Label x:Name="lblScore" Foreground="White" FontSize="20" />
+                <Label Content="Rows cleared:" Foreground="White" FontSize="20" />
                 <Label x:Name="lblRowsCleared" Foreground="White" />
             </StackPanel>
             
@@ -37,7 +37,7 @@
             x:Name="imageContainer" Width="240" Height="540" >
             <Image x:Name="imageGame" />
         </Grid>
-        <Grid Grid.Column="2" Background="MidnightBlue"
+        <Grid Grid.Column="2"
             x:Name="imagePreviewContainer" Width="120" Height="540" >
             <Image x:Name="imagePreview" />
         </Grid>

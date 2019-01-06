@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Windows.Media;
 
+//https://docs.microsoft.com/en-us/dotnet/api/system.windows.media.mediaplayer?redirectedfrom=MSDN&view=netframework-4.7.2
+
 namespace Plugin.SimpleAudioPlayer
 {
     /// <summary>
@@ -99,7 +101,7 @@ namespace Plugin.SimpleAudioPlayer
 
             if (player != null)
             {
-                player.Open(new Uri("ms-appx:///Assets/" + fileName));
+                player.Open(new Uri(@"Assets\" + fileName, UriKind.Relative));
                 player.MediaEnded += OnPlaybackEnded;
             }
 

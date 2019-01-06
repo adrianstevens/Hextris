@@ -1,17 +1,18 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Hextris.Core
 {
     //ToDo needs renaming
     public struct ClearedType
     {
-        public int iRow { get; set; }
-        public bool bAlt { get; set; }
+        public int row { get; set; }
+        public bool isAlternate { get; set; }
     };
 
     enum GameState
     {
-        Ingame,
+        Playing,
         GameOver,
         Paused,
         Menu,
@@ -22,15 +23,14 @@ namespace Hextris.Core
         Classic,     //progress through the levels
         Challenge,   //garbage at start of each level, must get 10 lines to progress then the level resets with new garbage 
         Patterns,    //Pre-defined preset block patterns ... 50ish??
-        Speed,       //	GT_Speed,		//like classic but garbage comes up from the bottom of the play field
+        Speed,       //like classic but garbage comes up from the bottom of the play field
         Ultra,       //accumulate as many points as possible in 3 minutes
-        Clear40,          //clear 40 lines as quickly as possible
+        Clear40,     //clear 40 lines as quickly as possible
         count,
     };
 
     public enum HexType
     {
-        Wall,
         GamePiece,
         Erased,
         Blank,
@@ -38,27 +38,27 @@ namespace Hextris.Core
 
     public class GameBoard
     {
-        public static int GAME_WIDTH = 10;
-        public static int GAME_HEIGHT = 20;
-        static int NUM_PIECE_TYPES = (int)PieceType.count;
-        static int NUM_PREVIEWS = 3;
-        static int MAX_LINES = 8;
+        public static int GAME_WIDTH => 10;
+        public static int GAME_HEIGHT => 20;
+        readonly static int NUM_PIECE_TYPES = (int)PieceType.count;
+        readonly static int NUM_PREVIEWS = 3;
+        readonly static int MAX_LINES = 8;
 
         GameState gameState;
         GameType gameType = GameType.Classic;
 
-        GameHexagon[,] gameField = new GameHexagon[GAME_WIDTH, GAME_HEIGHT];//our game field
-        GameHexagon[,] prevField = new GameHexagon[GAME_WIDTH, GAME_HEIGHT];//before a line remove
-        GameHexagon[,] preDropField = new GameHexagon[GAME_WIDTH, GAME_HEIGHT];//lines erased without dropping
+        readonly GameHexagon[,] gameField = new GameHexagon[GAME_WIDTH, GAME_HEIGHT];//our game field
+        readonly GameHexagon[,] prevField = new GameHexagon[GAME_WIDTH, GAME_HEIGHT];//before a line remove
+        readonly GameHexagon[,] preDropField = new GameHexagon[GAME_WIDTH, GAME_HEIGHT];//lines erased without dropping
 
-        ClearedType[] clearedLines = new ClearedType[MAX_LINES];
+        readonly ClearedType[] clearedLines = new ClearedType[MAX_LINES];
 
         GamePiece savedPiece;
         GamePiece ghostPiece;
         GamePiece currentPiece;
-        GamePiece[] piecePreviews = new GamePiece[NUM_PIECE_TYPES];
+        readonly GamePiece[] piecePreviews = new GamePiece[NUM_PIECE_TYPES];
 
-        int[] iPieceStats = new int[(int)PieceType.count];
+        readonly int[] pieceCounts = new int[(int)PieceType.count];
 
         int rows = GAME_HEIGHT;
 
@@ -70,7 +70,7 @@ namespace Hextris.Core
         int time;
         
 
-        int[] stats = new int[NUM_PIECE_TYPES];
+        readonly int[] stats = new int[NUM_PIECE_TYPES];
 
         bool newHighScore;
 
@@ -92,10 +92,14 @@ namespace Hextris.Core
 
         public void OnTimerTick() //from rendering engine
         {
+            if (gameState != GameState.Playing)
+                return;
+
             currentPiece.MoveDown();
 
             if (CheckCollision(currentPiece) == true)
             {
+                Debug.WriteLine("Collision");
                 currentPiece.MoveUp();
                 SetPieceToBoard(currentPiece);
                 NewPiece();
@@ -152,15 +156,15 @@ namespace Hextris.Core
 
         void NewPiece()
         {
-            var oldPiece = currentPiece;
             currentPiece = piecePreviews[0];
 
             for (int i = 0; i < NUM_PREVIEWS - 1; i++)
                 piecePreviews[i] = piecePreviews[i + 1];
 
-            oldPiece.SetRandomPieceType();
-            oldPiece.SetPosition(4, GAME_HEIGHT);
-            piecePreviews[NUM_PREVIEWS - 1] = oldPiece;
+            var newPiece = new GamePiece();
+            newPiece.SetRandomPieceType();
+            newPiece.SetPosition(4, GAME_HEIGHT + 1);
+            piecePreviews[NUM_PREVIEWS - 1] = newPiece;
 
             stats[(int)currentPiece.PieceType]++;
         }
@@ -186,10 +190,9 @@ namespace Hextris.Core
                 case GameType.Clear40:
                     break;
                 default:
-
                     break;
             }
-            gameState = GameState.Ingame;
+            gameState = GameState.Playing;
         }
 
         public bool OnUp()
@@ -240,6 +243,15 @@ namespace Hextris.Core
             return true;
         }
 
+        public void OnPause()
+        {
+            if (gameState == GameState.Playing)
+                gameState = GameState.Paused;
+            else if (gameState == GameState.Paused)
+                gameState = GameState.Playing;
+        }
+
+
         public bool OnRotate()
         {
             currentPiece.Rotate();
@@ -283,19 +295,19 @@ namespace Hextris.Core
 
         private void SetPieceToBoard(GamePiece gamePiece)
         {
-            int iYOffset = 0;
+            int yOffset = 0;
 
             for (int i = 0; i < 5; i++)
             {
                 if ((i + currentPiece.GetX()) % 2 == 0)
-                    iYOffset++;
+                    yOffset++;
 
                 for (int j = 0; j < 5; j++)
                 {
                     if (currentPiece.GetHex(i, j).ePiece == HexType.GamePiece)
                     {
                         int x2 = currentPiece.GetX() + i;
-                        int y2 = currentPiece.GetY() - j - iYOffset;
+                        int y2 = currentPiece.GetY() - j - yOffset;
 
                         gameField[x2, y2].ePiece = HexType.GamePiece;
                         gameField[x2, y2].indexColor = (int)currentPiece.PieceType;
@@ -335,18 +347,18 @@ namespace Hextris.Core
             if (gamePiece == null)
                 return false;
 
-            int iYOffset = 0;//I'm not happy about this either ....
+            int yOffset = 0;
             for (int x = 0; x < 5; x++)
             {
                 if ((x + gamePiece.GetX()) % 2 == 0)
-                    iYOffset++;
+                    yOffset++;
 
                 for (int y = 0; y < 5; y++)
                 {
                     if (gamePiece.GetHex(x,y).ePiece == HexType.GamePiece)
                     {
                         int x2 = gamePiece.GetX() + x;
-                        int y2 = gamePiece.GetY() - y - iYOffset;
+                        int y2 = gamePiece.GetY() - y - yOffset;
 
                         if (y2 >= GAME_HEIGHT)
                             continue;
@@ -378,76 +390,81 @@ namespace Hextris.Core
 
         private void CheckForCompleteLines ()
         {
-            var iClearedLines = 0;
+            int clearedLineCount = 0;
 
-            bool bCompLine;
-            bool bCompAlt;
+            bool completeLineFound;
 
             //ToDo check if the -1 is needed (wasn't in C++ code)
-            for (int y = 0; y < rows - 1; y++)
+            for (int y = 0; y < rows -1; y++)
             {
-                bCompLine = true;
+                completeLineFound = true;
 
                 for (int x = 0; x < GAME_WIDTH; x++)
                 {
                     if (gameField[x,y].ePiece != HexType.GamePiece)
                     {
-                        bCompLine = false;
+                        completeLineFound = false;
+                        break;
                     }
                 }
 
-                if (bCompLine)
+                if (completeLineFound)
                 {
-                    clearedLines[iClearedLines].bAlt = false;
-                    clearedLines[iClearedLines].iRow = y;
-                    iClearedLines++;
+                    Debug.WriteLine("Normal complete line found at " + y);
+                    clearedLines[clearedLineCount].isAlternate = false;
+                    clearedLines[clearedLineCount].row = y;
+                    clearedLineCount++;
                 }
 
-                bCompAlt = true;
+                //check for alt style
+                completeLineFound = true;
 
                 for (int x = 0; x < GAME_WIDTH; x++)
                 {
                     if (gameField[x, y + x % 2].ePiece != HexType.GamePiece)
                     {
-                        bCompAlt = false;
+                        completeLineFound = false;
+                        break;
                     }
                 }
 
-                if (bCompAlt)
+                if (completeLineFound)
                 {
-                    clearedLines[iClearedLines].bAlt = true;
-                    clearedLines[iClearedLines].iRow = y;
-                    iClearedLines++;
+                    Debug.WriteLine("Alt complete line found at " + y);
+                    clearedLines[clearedLineCount].isAlternate = true;
+                    clearedLines[clearedLineCount].row = y;
+                    clearedLineCount++;
                 }
             }
 
-            if (iClearedLines > 0)
+            if (clearedLineCount > 0)
             {
-                //now we set our alt structures
-                Array.Copy(gameField, prevField, gameField.Length);
+                //Array.Copy(gameField, prevField, gameField.Length);
 
-                for (int i = 0; i < iClearedLines; i++)
+                for (int i = 0; i < clearedLineCount; i++)
                 {
                     //now we'll set the hexes to cleared
-                    SetLineToCleared(clearedLines[i].iRow, clearedLines[i].bAlt);
-                    Array.Copy(gameField, preDropField, gameField.Length);
+                    SetLineToCleared(clearedLines[i].row, clearedLines[i].isAlternate);
+                    //Array.Copy(gameField, preDropField, gameField.Length);
                 }
                 //and finally, copy and move everything down
-                DropPieces();
+                DropBoardAfterRowsCleared();
             }
         }
 
-        private void SetLineToCleared(int iY, bool bAlt)
+        private void SetLineToCleared(int y, bool isAlternate)
         {
-            int iYLow = iY;
+            int yLow = y;
 
             //to make this really easy we're going to do this one column at a time
             for (int i = 0; i < GAME_WIDTH; i++)
             {
-                if (bAlt)
-                    iYLow = iY + i % 2;
+                if (isAlternate)
+                    yLow = y + i % 2;
+                else
+                    yLow = y;
 
-                gameField[i, iYLow].ePiece = HexType.Erased;
+                gameField[i, yLow].ePiece = HexType.Erased;
             }
             ScoreClearedLine();
         }
@@ -461,21 +478,45 @@ namespace Hextris.Core
                 Level++;
         }
 
-        void DropPieces()
+        void DropBoardAfterRowsClearedNew()
+        {
+            for (int i = 0; i < GAME_WIDTH; i++)
+            {
+                for(int j = 0; j < GAME_HEIGHT - 1; j++)
+                {
+                    if(gameField[i,j].ePiece == HexType.Erased)
+                    {   //move everything down
+                        for (int y = j; y < GAME_HEIGHT -1; y++)
+                        {
+                            gameField[i, y].ePiece = gameField[i, y + 1].ePiece;
+                            gameField[i, y].indexColor = gameField[i, y + 1].indexColor;
+                        }
+
+                    }
+
+
+                }
+            }
+        }
+
+        void DropBoardAfterRowsCleared()
         {
             //to make this really easy we're going to do this one column at a time
             for (int i = 0; i < GAME_WIDTH; i++)
             {
-                for (int j = rows - 1; j > -1; j--)
+                for (int j = GAME_HEIGHT - 1; j > -1; j--)
                 {
                     if (gameField[i,j].ePiece == HexType.Erased)
                     {
-                        for (int k = j; k < rows - 2; k++)
+                        for (int k = j; k < GAME_HEIGHT - 2; k++)
                         {
-                            gameField[i,k] = gameField[i,k + 1];
+                            //cough ... refrence types not value types ....
+                            gameField[i, k].ePiece = gameField[i, k + 1].ePiece;
+                            gameField[i, k].indexColor = gameField[i, k + 1].indexColor;
                         }
-                        //and no matter what, we clear the top
-                        gameField[i, rows - 1].ePiece = HexType.Blank;
+
+                        //and 
+                        gameField[i, GAME_HEIGHT - 1].ePiece = HexType.Blank;
                     }
                 }
             }
@@ -485,12 +526,5 @@ namespace Hextris.Core
         {
             return currentPiece;
         }
-
-        public void SetNumRows(int iRows)
-        {
-            this.rows = iRows;
-        }
-
-        public int GetNumRows() { return rows; }
     }
 }
