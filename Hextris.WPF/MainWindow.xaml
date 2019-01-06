@@ -9,6 +9,12 @@
         Height="600"
         Width="600"
         Background="Black" >
+    <Window.Resources>
+        <Style TargetType="Label">
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontSize" Value="20" />
+        </Style>
+    </Window.Resources>
 
     <Grid Background="Black" VerticalAlignment="Top" >
         <Grid.ColumnDefinitions>
@@ -24,15 +30,15 @@
 
         <Grid Grid.Column="0">
             <StackPanel>
-                <Label Content="High Score:" Foreground="White" FontSize="20" />
-                <Label x:Name="lblHighScore" Foreground="White" FontSize="20" />
-                <Label Content="Score:" Foreground="White" FontSize="20" />
-                <Label x:Name="lblScore" Foreground="White" FontSize="20" />
-                <Label Content="Level:" Foreground="White" FontSize="20" />
-                <Label x:Name="lblLevel" Foreground="White" FontSize="20" />
-                <Label Content="Rows:" Foreground="White" FontSize="20" />
-                <Label x:Name="lblRowsCleared" Foreground="White" FontSize="20" />
-                <Label x:Name="lblGameState" Foreground="White" FontSize="20" />
+                <Label Content="High Score:" />
+                <Label x:Name="lblHighScore" />
+                <Label Content="Score:" />
+                <Label x:Name="lblScore" />
+                <Label Content="Level:" />
+                <Label x:Name="lblLevel" />
+                <Label Content="Rows:" />
+                <Label x:Name="lblRowsCleared" />
+                <Label x:Name="lblGameState" />
             </StackPanel>
             
         </Grid>
@@ -42,7 +48,7 @@
             <Image x:Name="imageGame" />
         </Grid>
         <Grid Grid.Column="2"
-            x:Name="imagePreviewContainer" Width="120" Height="540" >
+            x:Name="imagePreviewContainer" Width="120" Height="240" >
             <Image x:Name="imagePreview" />
         </Grid>
         
