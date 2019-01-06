@@ -5,9 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Hextris.WPF"
         mc:Ignorable="d"
-        Title="Hextris v0.0.1" 
+        Title="Hextris v0.0.2 - Jan 6, 2018" 
         Height="600"
         Width="600"
+        Background="Black"
         Loaded="Window_Loaded" >
 
     <Grid Background="Black" VerticalAlignment="Top" >
@@ -24,12 +25,15 @@
 
         <Grid Grid.Column="0">
             <StackPanel>
+                <Label Content="High Score:" Foreground="White" FontSize="20" />
+                <Label x:Name="lblHighScore" Foreground="White" FontSize="20" />
                 <Label Content="Score:" Foreground="White" FontSize="20" />
                 <Label x:Name="lblScore" Foreground="White" FontSize="20" />
                 <Label Content="Level:" Foreground="White" FontSize="20" />
                 <Label x:Name="lblLevel" Foreground="White" FontSize="20" />
                 <Label Content="Rows:" Foreground="White" FontSize="20" />
                 <Label x:Name="lblRowsCleared" Foreground="White" FontSize="20" />
+                <Label x:Name="lblGameState" Foreground="White" FontSize="20" />
             </StackPanel>
             
         </Grid>

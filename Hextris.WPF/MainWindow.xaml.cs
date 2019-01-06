@@ -26,7 +26,7 @@ namespace Hextris.WPF
 
         Point[,] gameField;
 
-        GameBoard hexGame = new GameBoard();
+        GameBoard hexGame;
 
         WriteableBitmap gameboardBmp;
         WriteableBitmap previewBmp;
@@ -34,6 +34,9 @@ namespace Hextris.WPF
         public MainWindow()
         {
             InitializeComponent();
+
+            hexGame = new GameBoard();
+            hexGame.OnLevelChanged += HexGame_OnLevelChanged;
 
             audioPlayer = new SimpleAudioPlayerWPF();
 
@@ -57,6 +60,11 @@ namespace Hextris.WPF
             KeyUp += OnKeyUp;   
         }
 
+        private void HexGame_OnLevelChanged(object sender, EventArgs e)
+        {
+            gameTimer.Interval = TimeSpan.FromSeconds(Math.Max(0.05, 1 - hexGame.Level * 0.05));
+        }
+
         private void OnKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
         {
             switch(e.Key)
@@ -77,7 +85,7 @@ namespace Hextris.WPF
                     hexGame.OnPause();
                     break;
                 case Key.R:
-                    hexGame.ResetBoard();
+                    hexGame.NewGame();
                     break;
                 case Key.S:
                     break;
@@ -99,9 +107,15 @@ namespace Hextris.WPF
 
         void UpdateText()
         {
+            lblHighScore.Content = hexGame.HighScore;
             lblScore.Content = hexGame.Score;
             lblLevel.Content = hexGame.Level;
             lblRowsCleared.Content = hexGame.RowsCleared;
+
+            if (hexGame.GameState != GameState.Playing)
+                lblGameState.Content = hexGame.GameState.ToString();
+            else
+                lblGameState.Content = string.Empty;
         }
 
         void OnDraw ()
@@ -170,32 +184,30 @@ namespace Hextris.WPF
 
         void DrawCurrentPiece ()
         {
-            int iYOffset = 0;
-
-            var currentPiece = hexGame.GetCurrentPiece();
+            int yOffset = 0;
 
             for (int i = 0; i < 5; i++)
             {
-                if ((i + currentPiece.GetX()) % 2 == 0)
-                    iYOffset++;
+                if ((i + hexGame.CurrentPiece.GetX()) % 2 == 0)
+                    yOffset++;
 
                 for (int j = 0; j < 5; j++)
                 {
-                    if (currentPiece.GetHex(i, j).ePiece == HexType.GamePiece)
+                    if (hexGame.CurrentPiece.GetHex(i, j).ePiece == HexType.GamePiece)
                     {
                         //so ... the current piece stores its position relative to the grid (bottom left being 0,0 ... this are grid points not screen points
                         //gameField is an array of screen points the size of the current grid
                         //so we get the piece position (which is top left
-                        int x = currentPiece.GetX();
-                        int y = currentPiece.GetY();
+                        int x = hexGame.CurrentPiece.GetX();
+                        int y = hexGame.CurrentPiece.GetY();
                         x += i;
-                        y -= (j + iYOffset);
+                        y -= (j + yOffset);
 
                         if (y < GameBoard.GAME_HEIGHT && x < GameBoard.GAME_WIDTH)
                         {
                             DrawHexagon(gameboardBmp, gameField[x, y], 
-                                GetColor(currentPiece.PieceType, false),
-                                GetColor(currentPiece.PieceType, true),
+                                GetColor(hexGame.CurrentPiece.PieceType, false),
+                                GetColor(hexGame.CurrentPiece.PieceType, true),
                                 HEX_SIZE, false);
                         }
                     }
@@ -207,12 +219,12 @@ namespace Hextris.WPF
         {
             {Color.FromRgb(191,0,0),      Color.FromRgb(255,0,0),       Color.FromRgb(127,0,0)},			//Red
 	        {Color.FromRgb(191,95,0),     Color.FromRgb(255,127,0),     Color.FromRgb(127,64,0)},			//orange
-	        {Color.FromRgb(191,0,191),    Color.FromRgb(240,0,255),     Color.FromRgb(127,0,127)},				//fuschia
-	        {Color.FromRgb(0,191,191),    Color.FromRgb(0,255,255),     Color.FromRgb(0,127,127)},				//cyan
+	        {Color.FromRgb(191,0,191),    Color.FromRgb(240,0,255),     Color.FromRgb(127,0,127)},			//fuschia
+	        {Color.FromRgb(0,191,191),    Color.FromRgb(0,255,255),     Color.FromRgb(0,127,127)},			//cyan
 	        {Color.FromRgb(0,95,191),     Color.FromRgb(0,127,255),     Color.FromRgb(0,64,127)},			//blue
-	        {Color.FromRgb(127,0,191),    Color.FromRgb(191,0,255),     Color.FromRgb(92,0,127)},				//purple
+	        {Color.FromRgb(127,0,191),    Color.FromRgb(191,0,255),     Color.FromRgb(92,0,127)},			//purple
 	        {Color.FromRgb(0,191,0),      Color.FromRgb(0,255,0),       Color.FromRgb(0,127,0)},			//green
-	        {Color.FromRgb(191,191,0),    Color.FromRgb(255,255,0),     Color.FromRgb(127,127,0)},				//yellow
+	        {Color.FromRgb(191,191,0),    Color.FromRgb(255,255,0),     Color.FromRgb(127,127,0)},			//yellow
 	        {Color.FromRgb(191,191,191),  Color.FromRgb(255,255,255),   Color.FromRgb(127,127,127)},		//white
 	        {Color.FromRgb(127,127,127),  Color.FromRgb(191,191,191),   Color.FromRgb(64,64,64)},
         };
