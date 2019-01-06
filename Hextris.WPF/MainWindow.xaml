@@ -8,8 +8,7 @@
         Title="Hextris v0.0.2 - Jan 6, 2018" 
         Height="600"
         Width="600"
-        Background="Black"
-        Loaded="Window_Loaded" >
+        Background="Black" >
 
     <Grid Background="Black" VerticalAlignment="Top" >
         <Grid.ColumnDefinitions>

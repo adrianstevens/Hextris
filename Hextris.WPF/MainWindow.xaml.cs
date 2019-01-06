@@ -35,6 +35,7 @@ namespace Hextris.WPF
             InitializeComponent();
 
             hexGame = new GameBoard();
+            hexGame.HighScore = Properties.Settings.Default.HighScore;
             hexGame.OnLevelChanged += HexGame_OnLevelChanged;
 
             audioPlayer = new SimpleAudioPlayerWPF();
@@ -56,7 +57,12 @@ namespace Hextris.WPF
             gameTimer.Tick += GameTimerTick;
             gameTimer.Start();
 
-            KeyUp += OnKeyUp;   
+            KeyUp += OnKeyUp;
+            Closed += (s, e) =>
+            {
+                Properties.Settings.Default.HighScore = hexGame.HighScore;
+                Properties.Settings.Default.Save();
+            };
         }
 
         private void HexGame_OnLevelChanged(object sender, EventArgs e)

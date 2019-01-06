@@ -3,7 +3,6 @@ using System.Diagnostics;
 
 namespace Hextris.Core
 {
-    //ToDo needs renaming
     public struct ClearedType
     {
         public int Row { get; set; }
@@ -55,16 +54,16 @@ namespace Hextris.Core
 
         readonly ClearedType[] clearedLines = new ClearedType[MAX_LINES];
 
-        GamePiece savedPiece;
         public GamePiece GhostPiece { get; private set; }
         public GamePiece CurrentPiece { get; private set; }
         readonly GamePiece[] piecePreviews = new GamePiece[NUM_PIECE_TYPES];
+        GamePiece savedPiece;
 
         readonly int[] pieceCounts = new int[(int)PieceType.count];
 
-        int rows = GAME_HEIGHT;
+        readonly int rows = GAME_HEIGHT;
 
-        public int HighScore { get; private set; }
+        public int HighScore { get; set; }
         public int Score { get; private set; }
         public int RowsCleared { get; private set; }
 
@@ -79,8 +78,7 @@ namespace Hextris.Core
         }
         private int _level;
 
-        int startingLevel = 1;
-        
+        readonly int startingLevel = 1;
 
         readonly int[] stats = new int[NUM_PIECE_TYPES];
 
@@ -187,13 +185,10 @@ namespace Hextris.Core
                 case GameType.Classic:
                     break;
                 case GameType.Challenge:
-                    //AddGarageBlocks();//based on current level
                     break;
                 case GameType.Patterns:
-                    //SetPattern();
                     break;
                 case GameType.Ultra:
-                    //iTime = CHALLENGE_TIME;//we'll count backwards for this gamemode
                     break;
                 case GameType.Clear40:
                     break;
@@ -203,52 +198,45 @@ namespace Hextris.Core
             GameState = GameState.Playing;
         }
 
-        public bool OnUp()
+        public void OnUp()
         {
             CurrentPiece.MoveUp();
-            return true;
         }
 
-        public bool OnDown()
+        public void OnDown()
         {
             CurrentPiece.MoveDown();
 
             if (CheckCollision(CurrentPiece))
             {
                 CurrentPiece.MoveUp();
-                return false;
             }
-            return true;
         }
 
-        public bool OnLeft()
+        public void OnLeft()
         {
             CurrentPiece.MoveLeft();
 
             if (CheckCollision(CurrentPiece))
             {
                 CurrentPiece.MoveRight();
-                return false;
+                return;
             }
 
             CalcGhost();
-
-            return true;
         }
 
-        public bool OnRight()
+        public void OnRight()
         {
             CurrentPiece.MoveRight();
 
             if (CheckCollision(CurrentPiece))
             {
                 CurrentPiece.MoveLeft();
-                return false;
+                return;
             }
 
             CalcGhost();
-
-            return true;
         }
 
         public void OnPause()
@@ -260,7 +248,7 @@ namespace Hextris.Core
         }
 
 
-        public bool OnRotate()
+        public void OnRotate()
         {
             CurrentPiece.Rotate();
 
@@ -276,14 +264,12 @@ namespace Hextris.Core
                     {
                         CurrentPiece.MoveLeft();
                         CurrentPiece.RotateCCW();
-                        return false;
+                        return;
                     }
                 }
             }
 
             CalcGhost();
-
-            return true;
         }
 
         public void OnDrop()
@@ -293,12 +279,11 @@ namespace Hextris.Core
             CurrentPiece.MoveUp();
         }
 
-        public bool OnSwitchPiece()
+        public void OnSwitchPiece()
         {
             var piece = CurrentPiece;
             CurrentPiece = savedPiece;
             savedPiece = piece;
-            return true;
         }
 
         private void SetPieceToBoard(GamePiece gamePiece)
@@ -455,7 +440,7 @@ namespace Hextris.Core
         {
             int yLow = y;
 
-            //to make this really easy we're going to do this one column at a time
+            //to make this easy we'll do this one column at a time
             for (int i = 0; i < GAME_WIDTH; i++)
             {
                 if (isAlternate)
@@ -487,15 +472,13 @@ namespace Hextris.Core
                 newHighScore = true;
             }
 
-            //loop over so we can catch the % 10
+            //loop so we can catch the % 10
             for (int i = 0; i < count; i++)
             {
                 RowsCleared++;
                 if (RowsCleared % 10 == 0)
                     Level++;
             }
-
-            
         }
 
         void DropBoardAfterRowsClearedNew()
