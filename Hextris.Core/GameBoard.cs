@@ -66,7 +66,7 @@ namespace Hextris.Core
         public int Level { get; private set; }
         public int RowsCleared { get; private set; }
 
-        int startingLevel;
+        int startingLevel = 1;
         int time;
         
 
@@ -266,10 +266,8 @@ namespace Hextris.Core
 
                     if (CheckCollision(currentPiece))
                     {
-                        //give up
-                        //TODO
                         currentPiece.MoveLeft();
-                        currentPiece.MoveUp();
+                        currentPiece.RotateCCW();
                         return false;
                     }
                 }

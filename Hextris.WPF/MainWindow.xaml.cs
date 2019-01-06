@@ -18,9 +18,7 @@ namespace Hextris.WPF
         //we'll add rendering code here for now but it should be moved into a custom class or control
         int HEX_SIZE = 14; 
         int HEX_RATIO = 900; //of a 1000 for aspect ratio
-
         int BOTTOM_INDENT = 50;
-
         int HEX_COS30;
       
         DispatcherTimer gameTimer;
@@ -28,7 +26,7 @@ namespace Hextris.WPF
 
         Point[,] gameField;
 
-        GameBoard oGame = new GameBoard();
+        GameBoard hexGame = new GameBoard();
 
         WriteableBitmap gameboardBmp;
         WriteableBitmap previewBmp;
@@ -56,7 +54,7 @@ namespace Hextris.WPF
             gameTimer.Tick += GameTimerTick;
             gameTimer.Start();
 
-            this.KeyUp += OnKeyUp;   
+            KeyUp += OnKeyUp;   
         }
 
         private void OnKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
@@ -64,30 +62,27 @@ namespace Hextris.WPF
             switch(e.Key)
             {
                 case Key.Left:
-                    oGame.OnLeft();
+                    hexGame.OnLeft();
                     break;
                 case Key.Right:
-                    oGame.OnRight();
+                    hexGame.OnRight();
                     break;
                 case Key.Down:
-                    oGame.OnDown();
+                    hexGame.OnDown();
                     break;
                 case Key.Up:
-                    oGame.OnRotate();
+                    hexGame.OnRotate();
                     break;
                 case Key.P:
-                    oGame.OnPause();
+                    hexGame.OnPause();
                     break;
                 case Key.R:
-                    oGame.ResetBoard();
+                    hexGame.ResetBoard();
                     break;
                 case Key.S:
-               //     oGame.OnSwitchPiece();
-               //     audioPlayer.Load(@"switch.wav");
-               //     audioPlayer.Play();
                     break;
                 case Key.Space:
-                    oGame.OnDrop();
+                    hexGame.OnDrop();
                     break;
                 default:
                     return;
@@ -97,11 +92,16 @@ namespace Hextris.WPF
 
         private void GameTimerTick(object sender, EventArgs e)
         {
-            oGame.OnTimerTick();
+            hexGame.OnTimerTick();
             OnDraw();
-            lblScore.Content = oGame.Score;
-            lblLevel.Content = oGame.Level;
-            lblRowsCleared.Content = oGame.RowsCleared;
+            UpdateText();
+        }
+
+        void UpdateText()
+        {
+            lblScore.Content = hexGame.Score;
+            lblLevel.Content = hexGame.Level;
+            lblRowsCleared.Content = hexGame.RowsCleared;
         }
 
         void OnDraw ()
@@ -118,7 +118,6 @@ namespace Hextris.WPF
             using (previewBmp.GetBitmapContext())
             {
                 previewBmp.Clear();
-
                 DrawPiecePreview();
             }
         }
@@ -127,23 +126,26 @@ namespace Hextris.WPF
         {
             int j = (int)imageContainer.Height - BOTTOM_INDENT;
 
-            int iRow = 0;
+            int row = 0;
 
-            while (j > 0 && iRow < GameBoard.GAME_HEIGHT)
+            var hexColor = Color.FromRgb(10, 10, 36); //was 30, 30, 40
+            var outlineColor = Color.FromRgb(120, 120, 160); //was 20, 80, 255
+
+            while (j > 0 && row < GameBoard.GAME_HEIGHT)
             {
                 for (int i = 0; i < GameBoard.GAME_WIDTH / 2; i++)
                 {
-                    gameField[i * 2, iRow].X = i * HEX_SIZE * 3 + HEX_SIZE / 2;
-                    gameField[i * 2, iRow].Y = j;
+                    gameField[i * 2, row].X = i * HEX_SIZE * 3 + HEX_SIZE / 2;
+                    gameField[i * 2, row].Y = j;
 
-                    DrawHexagon(gameboardBmp, gameField[i*2, iRow], Color.FromRgb(20, 80, 255), Color.FromRgb(30, 30, 40), HEX_SIZE, false);
+                    DrawHexagon(gameboardBmp, gameField[i*2, row], outlineColor, hexColor, HEX_SIZE, false);
 
-                    gameField[i * 2 + 1, iRow].X = i * HEX_SIZE * 3 + 2 * HEX_SIZE;
-                    gameField[i * 2 + 1, iRow].Y = HEX_COS30 + gameField[i * 2, iRow].Y;
+                    gameField[i * 2 + 1, row].X = i * HEX_SIZE * 3 + 2 * HEX_SIZE;
+                    gameField[i * 2 + 1, row].Y = HEX_COS30 + gameField[i * 2, row].Y;
 
-                    DrawHexagon(gameboardBmp, gameField[i * 2 + 1, iRow], Color.FromRgb(20, 80, 255), Color.FromRgb(30, 30, 40), HEX_SIZE, false);
+                    DrawHexagon(gameboardBmp, gameField[i * 2 + 1, row], outlineColor, hexColor, HEX_SIZE, false);
                 }
-                iRow++;
+                row++;
 
                 j -= 2 * HEX_COS30;
             }
@@ -155,11 +157,11 @@ namespace Hextris.WPF
             {
                 for (int j = 0; j < GameBoard.GAME_HEIGHT; j++)
                 {
-                    if (oGame.GetBoardHex(i, j).ePiece == HexType.GamePiece)
+                    if (hexGame.GetBoardHex(i, j).ePiece == HexType.GamePiece)
                     {
                         DrawHexagon(gameboardBmp, gameField[i,j],
-                            GetColor((PieceType)oGame.GetBoardHex(i, j).indexColor, false),
-                            GetColor((PieceType)oGame.GetBoardHex(i, j).indexColor, true),
+                            GetColor((PieceType)hexGame.GetBoardHex(i, j).indexColor, false),
+                            GetColor((PieceType)hexGame.GetBoardHex(i, j).indexColor, true),
                             HEX_SIZE, false);
                     }
                 }
@@ -170,7 +172,7 @@ namespace Hextris.WPF
         {
             int iYOffset = 0;
 
-            var currentPiece = oGame.GetCurrentPiece();
+            var currentPiece = hexGame.GetCurrentPiece();
 
             for (int i = 0; i < 5; i++)
             {
@@ -219,14 +221,14 @@ namespace Hextris.WPF
         {
             var clr = isFill ? pieceColors[(int)pieceType, 0] : pieceColors[(int)pieceType, 2];
 
-            if (isGhost) clr.A = 30;
+            if (isGhost) clr.A = 60;
 
             return clr;
         }
 
         void DrawGhost ()
         {
-            var ghostPiece = oGame.GetGhost();
+            var ghostPiece = hexGame.GetGhost();
 
             int iYOffset = 0;
 
@@ -246,7 +248,8 @@ namespace Hextris.WPF
                         {
                             DrawHexagon(gameboardBmp, gameField[x,y],
                                 GetColor(ghostPiece.PieceType, true),
-                                Colors.Transparent,
+                                GetColor(ghostPiece.PieceType, true, true),
+                                // Colors.Transparent,
                                 HEX_SIZE, false);
                         }
                     }
@@ -268,7 +271,7 @@ namespace Hextris.WPF
                     int x = i + 10;
                     int y = GameBoard.GAME_HEIGHT - j - yOffset;
 
-                    var previewPiece = oGame.GetPreviewPiece(0);
+                    var previewPiece = hexGame.GetPreviewPiece(0);
 
                     if (previewPiece.GetHex(i, j).ePiece == HexType.GamePiece)
                     {

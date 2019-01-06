@@ -143,31 +143,56 @@ namespace Hextris.Core
 
         public void Rotate ()
         {
-            GameHexagon temp;
-
-            temp = data[1,3];          //Inner loop
+            var hex  = data[1,3];          //Inner loop
             data[1,3] = data[1,2];
             data[1,2] = data[2,1];
             data[2,1] = data[3,1];
             data[3,1] = data[3,2];
             data[3,2] = data[2,3];
-            data[2,3] = temp;
+            data[2,3] = hex;
 
-            temp = data[0,4];          //One outer loop
+            hex      = data[0,4];          //One outer loop
             data[0,4] = data[0,2];
             data[0,2] = data[2,0];
             data[2,0] = data[4,0];
             data[4,0] = data[4,2];
             data[4,2] = data[2,4];
-            data[2,4] = temp;
+            data[2,4] = hex;
 
-            temp = data[1,4];          //The other one
+            hex       = data[1,4];          //The other one
             data[1,4] = data[0,3];
             data[0,3] = data[1,1];
             data[1,1] = data[3,0];
             data[3,0] = data[4,1];
             data[4,1] = data[3,3];
-            data[3,3] = temp;
+            data[3,3] = hex;
+        }
+
+        public void RotateCCW ()
+        {
+            var hex = data[2, 3];
+            data[2, 3] = data[3, 2];
+            data[3, 2] = data[3, 1];
+            data[3, 1] = data[2, 1];
+            data[1, 1] = data[1, 2];
+            data[1, 2] = data[1, 3];
+            data[1, 3] = hex;
+
+            hex        = data[2, 4];
+            data[2, 4] = data[4, 2];
+            data[4, 2] = data[4, 0];
+            data[4, 0] = data[2, 0];
+            data[2, 0] = data[0, 2];
+            data[0, 2] = data[0, 4];
+            data[0, 4] = hex;
+
+            hex        = data[3, 3];        
+            data[3, 3] = data[4, 1];
+            data[4, 1] = data[3, 0];
+            data[3, 0] = data[1, 1];
+            data[1, 1] = data[0, 3];
+            data[0, 3] = data[1, 4];
+            data[1, 4] = hex;
         }
 
         public bool CopyPieceState (GamePiece piece)
