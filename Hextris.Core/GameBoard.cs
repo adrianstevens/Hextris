@@ -40,7 +40,7 @@ namespace Hextris.Core
         public event EventHandler  OnLevelChanged;
 
         public static int GAME_WIDTH => 10;
-        public static int GAME_HEIGHT => 20;
+        public static int GAME_HEIGHT => 21;
         readonly static int NUM_PIECE_TYPES = (int)PieceType.count;
         readonly static int NUM_PREVIEWS = 3;
         readonly static int MAX_LINES = 8;

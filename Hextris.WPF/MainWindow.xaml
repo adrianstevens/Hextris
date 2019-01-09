@@ -5,14 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Hextris.WPF"
         mc:Ignorable="d"
-        Title="Hextris v0.0.2 - Jan 6, 2018" 
-        Height="600"
-        Width="600"
+        Title="Hextris v0.0.3 - Jan 6, 2018" 
+        Height="700"
+        Width="700"
         Background="Black" >
     <Window.Resources>
         <Style TargetType="Label">
             <Setter Property="Foreground" Value="White" />
-            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontSize" Value="24" />
         </Style>
     </Window.Resources>
 
@@ -42,14 +42,15 @@
             </StackPanel>
             
         </Grid>
-        
+
         <Grid Grid.Column="1"
-            x:Name="imageContainer" Width="240" Height="540" >
+           x:Name="imageContainer" Width="280" Height="660" >
             <Image x:Name="imageGame" />
         </Grid>
+        
         <Grid Grid.Column="2"
             x:Name="imagePreviewContainer" Width="120" Height="240" >
-            <Image x:Name="imagePreview" />
+            <Image x:Name="imagePreview" VerticalAlignment="Top" />
         </Grid>
         
     </Grid>
