@@ -34,5 +34,17 @@ namespace Hextris.WPF.Properties {
                 this["HighScore"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ShowGhost {
+            get {
+                return ((bool)(this["ShowGhost"]));
+            }
+            set {
+                this["ShowGhost"] = value;
+            }
+        }
     }
 }

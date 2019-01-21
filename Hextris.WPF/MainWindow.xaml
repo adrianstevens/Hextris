@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Hextris.WPF"
         mc:Ignorable="d"
-        Title="Hextris v0.0.3 - Jan 6, 2018" 
+        Title="Hextris v0.0.4 - Jan 21, 2018" 
         Height="700"
         Width="700"
         Background="Black" >
@@ -29,7 +29,7 @@
         </Grid.RowDefinitions>
 
         <Grid Grid.Column="0">
-            <StackPanel>
+            <StackPanel Margin="5">
                 <Label Content="High Score:" />
                 <Label x:Name="lblHighScore" />
                 <Label Content="Score:" />
@@ -47,12 +47,23 @@
            x:Name="imageContainer" Width="280" Height="660" >
             <Image x:Name="imageGame" />
         </Grid>
-        
-        <Grid Grid.Column="2"
-            x:Name="imagePreviewContainer" Width="120" Height="240" >
-            <Image x:Name="imagePreview" VerticalAlignment="Top" />
-        </Grid>
-        
+
+        <Grid Grid.Column="2">
+            <StackPanel>
+                <Grid x:Name="imagePreviewContainer" Width="120" Height="240" >
+                    <Image x:Name="imagePreview" VerticalAlignment="Top" />
+                </Grid>
+                <Label Content="[↑] Rotate" FontSize="13" />
+                <Label Content="[←] Left" FontSize="13" />
+                <Label Content="[→] Right" FontSize="13" />
+                <Label Content="[P] Pause" FontSize="13" />
+                <Label Content="[R] Restart" FontSize="13" />
+                <Label Content="[G] Toggle Ghost" FontSize="13" />
+                <Label Content="[Z] Zoom" FontSize="13" />
+            </StackPanel>
+            
+    </Grid>
+
     </Grid>
         
 </Window>

@@ -1,5 +1,4 @@
 ﻿using System.Windows;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using System;
 using System.Windows.Input;
@@ -15,9 +14,8 @@ namespace Hextris.WPF
     /// </summary>
     public partial class MainWindow : Window
     {
-        static readonly int HEX_SIZE = 17;
+        static int HEX_SIZE = 15;
         static readonly int HEX_RATIO = 900; //of a 1000 for aspect ratio
-        static readonly int BOTTOM_INDENT = 50;
         int HEX_COS30;
       
         DispatcherTimer gameTimer;
@@ -36,6 +34,7 @@ namespace Hextris.WPF
 
             hexGame = new GameBoard();
             hexGame.HighScore = Properties.Settings.Default.HighScore;
+            hexGame.ShowGhost = Properties.Settings.Default.ShowGhost;
             hexGame.OnLevelChanged += HexGame_OnLevelChanged;
 
             audioPlayer = new SimpleAudioPlayerWPF();
@@ -46,7 +45,6 @@ namespace Hextris.WPF
             previewBmp = BitmapFactory.New((int)imagePreviewContainer.Width, (int)imagePreviewContainer.Height);
             imagePreview.Source = previewBmp;
 
-            HEX_COS30 = HEX_SIZE * HEX_RATIO / 1000;
             gameField = new Point[GameBoard.GAME_WIDTH, GameBoard.GAME_HEIGHT];
             CalcGamefield();
 
@@ -61,7 +59,9 @@ namespace Hextris.WPF
             Closed += (s, e) =>
             {
                 Properties.Settings.Default.HighScore = hexGame.HighScore;
+                Properties.Settings.Default.ShowGhost = hexGame.ShowGhost;
                 Properties.Settings.Default.Save();
+
             };
         }
 
@@ -92,6 +92,12 @@ namespace Hextris.WPF
                 case Key.R:
                     hexGame.NewGame();
                     break;
+                case Key.G:
+                    hexGame.ShowGhost = !hexGame.ShowGhost;
+                    break;
+                case Key.Z:
+                    OnZoom();
+                    break;
                 case Key.Space:
                     hexGame.OnDrop();
                     break;
@@ -111,9 +117,9 @@ namespace Hextris.WPF
         void UpdateText()
         {
             lblHighScore.Content = hexGame.HighScore.ToString("#,#");
-            lblScore.Content = hexGame.Score.ToString("#,#");
+            lblScore.Content = hexGame.Score.ToString("#,0");
             lblLevel.Content = hexGame.Level;
-            lblRowsCleared.Content = hexGame.RowsCleared.ToString("#,#");
+            lblRowsCleared.Content = hexGame.RowsCleared.ToString("#,0");
 
             if (hexGame.GameState != GameState.Playing)
                 lblGameState.Content = hexGame.GameState.ToString();
@@ -129,9 +135,12 @@ namespace Hextris.WPF
                 DrawBackground();
                 DrawGameBoard();
 
-                DrawPiece(hexGame.GhostPiece,
+                if (hexGame.ShowGhost)
+                {
+                    DrawPiece(hexGame.GhostPiece,
                     GetPieceColor(hexGame.CurrentPiece.PieceType, true),
                     GetPieceColor(hexGame.CurrentPiece.PieceType, true, true));
+                }
 
                 DrawPiece(hexGame.CurrentPiece,
                     GetPieceColor(hexGame.CurrentPiece.PieceType, false),
@@ -147,8 +156,10 @@ namespace Hextris.WPF
 
         void CalcGamefield ()
         {
+            HEX_COS30 = HEX_SIZE * HEX_RATIO / 1000;
+
             int x, y;
-            int yIndent = 10;//lazy
+            int yIndent = 10;
 
             for (int j = 0; j < GameBoard.GAME_HEIGHT; j++)
             {
@@ -301,6 +312,27 @@ namespace Hextris.WPF
 
             bitmap.FillPolygon(ptHex, fill);
             bitmap.DrawPolylineAa(ptHex, outline);
+        }
+
+        void SetGameHexSize(int hexSize)
+        {
+            if (hexSize < 10 || hexSize > 24)
+                return;
+
+            HEX_SIZE = hexSize;
+
+            CalcGamefield();
+            OnDraw();
+        }
+
+        void OnZoom ()
+        {
+            if (HEX_SIZE < 14)
+                SetGameHexSize(15);
+            else if (HEX_SIZE < 16)
+                SetGameHexSize(17);
+            else
+                SetGameHexSize(13);
         }
     }
 }

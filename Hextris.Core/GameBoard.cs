@@ -46,6 +46,7 @@ namespace Hextris.Core
         readonly static int MAX_LINES = 8;
 
         public GameState GameState { get; private set; }
+        public bool ShowGhost { get; set; } = true;
         GameType gameType = GameType.Classic;
 
         readonly GameHexagon[,] gameField = new GameHexagon[GAME_WIDTH, GAME_HEIGHT];//our game field
@@ -454,7 +455,7 @@ namespace Hextris.Core
 
         private void ScoreClearedLines(int count = 1)
         {
-            int baseScore = 50;
+            int baseScore = ShowGhost ? 50 : 60;
 
             if (count == 2)
                 baseScore = 125;
