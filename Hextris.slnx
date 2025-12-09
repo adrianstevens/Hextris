@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Hextris.Core\Hextrix.Core.csproj" />
+  <Project Path="Hextris.WPF\Hextrix.WPF.csproj" />
+</Solution>
