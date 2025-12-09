@@ -19,7 +19,7 @@ namespace Hextris.WPF
         int HEX_COS30;
       
         DispatcherTimer gameTimer;
-        SimpleAudioPlayerWPF audioPlayer;
+        SimpleAudioPlayerWPF audioPlayer; // TODO: Implement audio features
 
         Point[,] gameField;
 

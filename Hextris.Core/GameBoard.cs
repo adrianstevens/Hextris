@@ -50,8 +50,6 @@ namespace Hextris.Core
         GameType gameType = GameType.Classic;
 
         readonly GameHexagon[,] gameField = new GameHexagon[GAME_WIDTH, GAME_HEIGHT];//our game field
-        readonly GameHexagon[,] prevField = new GameHexagon[GAME_WIDTH, GAME_HEIGHT];//before a line remove
-        readonly GameHexagon[,] preDropField = new GameHexagon[GAME_WIDTH, GAME_HEIGHT];//lines erased without dropping
 
         readonly ClearedType[] clearedLines = new ClearedType[MAX_LINES];
 
@@ -59,8 +57,6 @@ namespace Hextris.Core
         public GamePiece CurrentPiece { get; private set; }
         readonly GamePiece[] piecePreviews = new GamePiece[NUM_PIECE_TYPES];
         GamePiece savedPiece;
-
-        readonly int[] pieceCounts = new int[(int)PieceType.count];
 
         readonly int rows = GAME_HEIGHT;
 
@@ -465,7 +461,6 @@ namespace Hextris.Core
                 baseScore = 400;
 
             Score += baseScore * Level;
-            RowsCleared += count;
 
             if(Score > HighScore)
             {
@@ -479,24 +474,6 @@ namespace Hextris.Core
                 RowsCleared++;
                 if (RowsCleared % 10 == 0)
                     Level++;
-            }
-        }
-
-        void DropBoardAfterRowsClearedNew()
-        {
-            for (int i = 0; i < GAME_WIDTH; i++)
-            {
-                for(int j = 0; j < GAME_HEIGHT - 1; j++)
-                {
-                    if(gameField[i,j].ePiece == HexType.Erased)
-                    {   //move everything down
-                        for (int y = j; y < GAME_HEIGHT -1; y++)
-                        {
-                            gameField[i, y].ePiece = gameField[i, y + 1].ePiece;
-                            gameField[i, y].indexColor = gameField[i, y + 1].indexColor;
-                        }
-                    }
-                }
             }
         }
 
